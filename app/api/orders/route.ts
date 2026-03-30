@@ -7,11 +7,17 @@ const KIOSK_EMPLOYEE_ID = 1;
 export async function POST(request: Request) {
   const client = await pool.connect();
   try {
-    const { items } = (await request.json()) as { items: CartItem[] };
+    const { items, employeeId } = (await request.json()) as {
+      items: CartItem[];
+      employeeId?: number | string | null;
+    };
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'No items in order' }, { status: 400 });
     }
 
+    const resolvedEmployeeId = Number.isFinite(Number(employeeId))
+      ? Number(employeeId)
+      : KIOSK_EMPLOYEE_ID;
     const total = items.reduce((sum, item) => sum + lineTotal(item), 0);
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -22,7 +28,7 @@ export async function POST(request: Request) {
     // 1. Insert order
     const orderRes = await client.query(
       'INSERT INTO orders (customerid, employeeid, total, date, hour) VALUES ($1, $2, $3, $4, $5) RETURNING orderid',
-      [1, KIOSK_EMPLOYEE_ID, total.toFixed(2), dateStr, hour]
+      [1, resolvedEmployeeId, total.toFixed(2), dateStr, hour]
     );
     const orderId = orderRes.rows[0].orderid;
 

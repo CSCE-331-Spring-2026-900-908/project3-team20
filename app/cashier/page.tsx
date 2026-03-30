@@ -8,12 +8,18 @@ export default function CashierPage() {
     const [toppings, setToppings] = useState<Topping[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [customizing, setCustomizing] = useState<Drink | null>(null);
+    const [employeeId, setEmployeeId] = useState<number | null>(null);
     const [employeeName, setEmployeeName] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [orderPlaced, setOrderPlaced] = useState(false);
 
     useEffect(() => {
+        const storedEmployeeId = localStorage.getItem('employeeId');
         const name = localStorage.getItem('employeeName');
+        if (storedEmployeeId) {
+            const parsedEmployeeId = Number(storedEmployeeId);
+            if (!Number.isNaN(parsedEmployeeId)) setEmployeeId(parsedEmployeeId);
+        }
         if (name) setEmployeeName(name);
 
         fetch('/api/drinks').then(r => r.json()).then(data => {
@@ -44,7 +50,7 @@ export default function CashierPage() {
             const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cart }),
+                body: JSON.stringify({ items: cart, employeeId }),
             });
             if (res.ok) {
                 setCart([]);

@@ -153,11 +153,18 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
  */
 export default function Portal() {
   const [modalOpen, setModalOpen] = useState(false);
+  const router = useRouter();
   // Tracks which link the user clicked so we know where to redirect after login
   const [targetLink, setTargetLink] = useState({ href: "", role: "" });
 
   const handleLinkClick = (link: typeof portalLinks[0]) => {
-    if (link.requiresAuth && link.role) {
+    // Public pages (Customer, Menu Board) - navigate directly
+    if (!link.requiresAuth) {
+      router.push(link.href);
+      return;
+    }
+    // Protected pages (Cashier, Manager) - open login modal first
+    if (link.role) {
       setTargetLink({ href: link.href, role: link.role });
       setModalOpen(true);
     }

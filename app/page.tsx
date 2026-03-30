@@ -157,7 +157,7 @@ export default function Portal() {
   const [targetLink, setTargetLink] = useState({ href: "", role: "" });
 
   const handleLinkClick = (link: typeof portalLinks[0]) => {
-    if (link.requiresAuth) {
+    if (link.requiresAuth && link.role) {
       setTargetLink({ href: link.href, role: link.role });
       setModalOpen(true);
     }

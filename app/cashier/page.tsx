@@ -10,6 +10,7 @@ export default function CashierPage() {
     const [customizing, setCustomizing] = useState<Drink | null>(null);
     const [employeeName, setEmployeeName] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [orderPlaced, setOrderPlaced] = useState(false);
 
     useEffect(() => {
         const name = localStorage.getItem('employeeName');
@@ -40,11 +41,16 @@ export default function CashierPage() {
     const checkout = async () => {
         if (cart.length === 0) return;
         try {
-            await fetch('/api/orders', {
+            const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: cart }),
             });
+            if (res.ok) {
+                setCart([]);
+                setOrderPlaced(true);
+                setTimeout(() => setOrderPlaced(false), 3000);
+            }
         } catch (err) {
             console.error('Checkout failed:', err);
         }
@@ -159,6 +165,9 @@ export default function CashierPage() {
                     >
                         Place Order
                     </button>
+                    {orderPlaced && (
+                        <p className="text-green-600 text-center text-sm mt-2">Order placed successfully!</p>
+                    )}
                 </div>
             </div>
 

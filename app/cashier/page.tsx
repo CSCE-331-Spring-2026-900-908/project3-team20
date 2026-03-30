@@ -37,6 +37,19 @@ export default function CashierPage() {
         setCart(prev => prev.filter((_, i) => i !== index));
     }, []);
 
+    const checkout = async () => {
+        if (cart.length === 0) return;
+        try {
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: cart }),
+            });
+        } catch (err) {
+            console.error('Checkout failed:', err);
+        }
+    };
+
     const categoryColors: Record<string, string> = {
         'fruity':   'bg-pink-100 border-pink-300 hover:bg-pink-200',
         'milk tea': 'bg-amber-100 border-amber-300 hover:bg-amber-200',
@@ -139,7 +152,13 @@ export default function CashierPage() {
                         <span className="font-bold">Total</span>
                         <span className="font-bold">${cartTotal.toFixed(2)}</span>
                     </div>
-                    {/* Added Order Functionality */}
+                    <button
+                        onClick={checkout}
+                        disabled={cart.length === 0}
+                        className="w-full py-3 bg-black text-white rounded font-medium disabled:opacity-40 hover:bg-gray-800"
+                    >
+                        Place Order
+                    </button>
                 </div>
             </div>
 

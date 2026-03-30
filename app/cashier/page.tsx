@@ -9,6 +9,7 @@ export default function CashierPage() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [customizing, setCustomizing] = useState<Drink | null>(null);
     const [employeeName, setEmployeeName] = useState<string>('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
     useEffect(() => {
         const name = localStorage.getItem('employeeName');
@@ -47,6 +48,11 @@ export default function CashierPage() {
 
     const clearCart = () => setCart([]);
 
+    const categories = ['All', ...Array.from(new Set(drinks.map(d => d.category || 'Other')))];
+    const filteredDrinks = selectedCategory === 'All'
+        ? drinks
+        : drinks.filter(d => (d.category || 'Other') === selectedCategory);
+
     return (
         <div className="flex h-screen bg-white text-black">
             {/* Main content */}
@@ -56,10 +62,27 @@ export default function CashierPage() {
                     <h1 className="text-2xl font-bold">{employeeName || 'Cashier'}</h1>
                 </header>
 
+                {/* Category tabs */}
+                <div className="flex gap-2 px-6 pt-4 flex-wrap">
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
+                                selectedCategory === cat
+                                    ? 'bg-black text-white border-black'
+                                    : 'bg-white text-black border-gray-300 hover:bg-gray-100'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+
                 {/* Drink grid */}
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {drinks.map(drink => (
+                        {filteredDrinks.map(drink => (
                             <button
                                 key={drink.drinkid}
                                 onClick={() => setCustomizing(drink)}
@@ -70,7 +93,7 @@ export default function CashierPage() {
                             </button>
                         ))}
                     </div>
-                    {drinks.length === 0 && (
+                    {filteredDrinks.length === 0 && (
                         <p className="text-gray-400 text-center mt-12">No drinks found.</p>
                     )}
                 </div>

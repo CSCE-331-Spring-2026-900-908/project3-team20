@@ -8,6 +8,7 @@ export default function CashierPage() {
     const [toppings, setToppings] = useState<Topping[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [customizing, setCustomizing] = useState<Drink | null>(null);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [employeeId, setEmployeeId] = useState<number | null>(null);
     const [employeeName, setEmployeeName] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -36,9 +37,21 @@ export default function CashierPage() {
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     const addToCart = useCallback((drink: Drink, quantity: number, selectedToppings: CartItemTopping[]) => {
-        setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings }]);
+        if (editingIndex !== null) {
+            setCart(prev => prev.map((item, i) =>
+                i === editingIndex ? { drink, quantity, toppings: selectedToppings } : item
+            ));
+            setEditingIndex(null);
+        } else {
+            setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings }]);
+        }
         setCustomizing(null);
-    }, []);
+    }, [editingIndex]);
+
+    const editItem = useCallback((index: number) => {
+        setEditingIndex(index);
+        setCustomizing(cart[index].drink);
+    }, [cart]);
 
     const removeFromCart = useCallback((index: number) => {
         setCart(prev => prev.filter((_, i) => i !== index));
@@ -80,14 +93,11 @@ export default function CashierPage() {
 
     return (
         <div className="flex h-screen bg-white text-black">
-            {/* Main content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Header */}
                 <header className="border-b px-6 py-4">
                     <h1 className="text-2xl font-bold">{employeeName || 'Cashier'}</h1>
                 </header>
 
-                {/* Category tabs */}
                 <div className="flex gap-2 px-6 pt-4 flex-wrap">
                     {categories.map(cat => (
                         <button
@@ -104,7 +114,6 @@ export default function CashierPage() {
                     ))}
                 </div>
 
-                {/* Drink grid */}
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {filteredDrinks.map(drink => (
@@ -124,7 +133,6 @@ export default function CashierPage() {
                 </div>
             </div>
 
-            {/* Cart sidebar */}
             <div className="w-80 border-l flex flex-col bg-gray-50">
                 <div className="px-4 py-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-bold">Order Summary {cartCount > 0 && `(${cartCount})`}</h2>
@@ -150,9 +158,14 @@ export default function CashierPage() {
                                         </p>
                                     ))}
                                 </div>
-                                <button onClick={() => removeFromCart(i)} className="text-red-500 text-xs hover:underline">
-                                    Remove
-                                </button>
+                                <div className="flex flex-col gap-1 items-end">
+                                    <button onClick={() => editItem(i)} className="text-blue-500 text-xs hover:underline">
+                                        Edit
+                                    </button>
+                                    <button onClick={() => removeFromCart(i)} className="text-red-500 text-xs hover:underline">
+                                        Remove
+                                    </button>
+                                </div>
                             </div>
                             <p className="text-xs text-right mt-1">${lineTotal(item).toFixed(2)}</p>
                         </div>
@@ -177,13 +190,14 @@ export default function CashierPage() {
                 </div>
             </div>
 
-            {/* Customization modal */}
             {customizing && (
                 <CustomizeModal
                     drink={customizing}
                     toppings={toppings}
                     onAdd={addToCart}
-                    onClose={() => setCustomizing(null)}
+                    onClose={() => { setCustomizing(null); setEditingIndex(null); }}
+                    initialQuantity={editingIndex !== null ? cart[editingIndex].quantity : 1}
+                    initialToppings={editingIndex !== null ? cart[editingIndex].toppings : []}
                 />
             )}
         </div>
@@ -195,14 +209,20 @@ function CustomizeModal({
     toppings,
     onAdd,
     onClose,
+    initialQuantity = 1,
+    initialToppings = [],
 }: {
     drink: Drink;
     toppings: Topping[];
     onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[]) => void;
     onClose: () => void;
+    initialQuantity?: number;
+    initialToppings?: CartItemTopping[];
 }) {
-    const [quantity, setQuantity] = useState(1);
-    const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>({});
+    const [quantity, setQuantity] = useState(initialQuantity);
+    const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>(
+        Object.fromEntries(initialToppings.map(t => [t.toppingid, t.amount]))
+    );
 
     const setToppingAmount = (id: number, amount: number) => {
         setToppingAmounts(prev => ({ ...prev, [id]: Math.max(0, Math.min(10, amount)) }));
@@ -293,7 +313,7 @@ function CustomizeModal({
                             Cancel
                         </button>
                         <button onClick={handleAdd} className="px-4 py-2 bg-black text-white rounded text-sm">
-                            Add to Order
+                            {initialQuantity !== 1 || initialToppings.length > 0 ? 'Update Order' : 'Add to Order'}
                         </button>
                     </div>
                 </div>

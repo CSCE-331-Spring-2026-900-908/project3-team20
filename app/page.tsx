@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -174,41 +173,70 @@ export default function Portal() {
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 text-stone-900">
+      <main className="min-h-screen bg-[#f8f3e3] text-stone-900 flex flex-col items-center justify-center">
         <section className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-12">
-          <div className="mb-10 text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-              Project 3
-            </p>
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-              Boba Tea Shop
+          <div className="mb-12 text-center">
+            {/* Boba cup logo */}
+            <div className="mx-auto mb-6 w-32 h-52">
+              <svg viewBox="0 0 150 240" className="w-full h-full">
+                <g stroke="#2A2A2A" strokeWidth="3" fill="none">
+                  {/* Cup outline */}
+                  <path d="M40,80 C40,60 40,40 40,20 L110,20 C110,40 110,60 110,80 L110,200 C110,220 40,220 40,200 Z" />
+
+                  {/* Straw */}
+                  <line x1="75" y1="10" x2="75" y2="160" strokeWidth="8" />
+
+                  {/* Lid/top */}
+                  <line x1="35" y1="20" x2="115" y2="20" />
+
+                  {/* Plant/flowers on left */}
+                  <path d="M55,140 C50,130 53,120 60,115" />
+                  <path d="M55,140 C58,130 63,125 70,123" />
+                  <path d="M55,140 C52,130 50,120 55,110" />
+                  <circle cx="60" cy="115" r="5" fill="#2A2A2A" />
+                  <circle cx="70" cy="123" r="5" fill="#2A2A2A" />
+                  <circle cx="55" cy="110" r="5" fill="#2A2A2A" />
+
+                  {/* Boba pearls on right */}
+                  <circle cx="90" cy="130" r="6" fill="#2A2A2A" />
+                  <circle cx="95" cy="150" r="6" fill="#2A2A2A" />
+                  <circle cx="85" cy="170" r="6" fill="#2A2A2A" />
+                  <circle cx="95" cy="190" r="6" fill="#2A2A2A" />
+                </g>
+              </svg>
+            </div>
+
+            {/* Global Code Crew*/}
+            <h1 className="mb-2 text-6xl font-bold tracking-tight text-[#2A2A2A] font-['Comic_Sans_MS',_cursive,_sans-serif]" style={{ letterSpacing: "-1px" }}>
+              GLOBAL CODE CREW
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-stone-700 sm:text-lg">
-              Welcome to the Boba Tea Shop portal. Choose a view below to enter the
-              appropriate experience for employees, customers, managers, or the menu display.
+
+            {/* Bubble Tea & More tagline */}
+            <p className="text-xl text-[#2A2A2A] mb-8 font-['Comic_Sans_MS',_cursive,_sans-serif]">
+              BOBA SHOP & MORE
             </p>
           </div>
 
           <nav
             aria-label="Portal navigation"
-            className="grid w-full max-w-5xl gap-6 sm:grid-cols-2"
+            className="grid w-full max-w-4xl gap-5 sm:grid-cols-2"
           >
             {portalLinks.map((link) => (
               <button
                 key={link.href}
                 onClick={() => handleLinkClick(link)}
-                className="group rounded-2xl border border-amber-200 bg-white p-6 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-300"
+                className="group rounded-3xl border border-stone-200 bg-white p-6 text-left shadow-md transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-300"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-2xl font-bold text-stone-900">{link.title}</h2>
+                  <h2 className="text-xl font-semibold text-stone-900">{link.title}</h2>
                   <span
                     aria-hidden="true"
-                    className="text-2xl text-amber-600 transition group-hover:translate-x-1"
+                    className="text-xl text-stone-500 transition group-hover:translate-x-1"
                   >
                     →
                   </span>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-stone-600">
+                <p className="mt-2 text-sm leading-6 text-stone-600">
                   {link.description}
                 </p>
               </button>

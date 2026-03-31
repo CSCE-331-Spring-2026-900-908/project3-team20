@@ -1,0 +1,59 @@
+SPRINT 1 - MEETING 3
+====================
+
+Attendees
+---------
+Prathinav Allena, Wyatt Voigt, Cannon Cavazos, Omer Aslan, Ahmet Aykanat
+
+Agenda
+------
+1. Individually finalized tasks to be ready for the sprint 1 demo.
+2. Checking if the MVP is working.
+
+Accomplishments
+---------------
+- Finished individual tasks and prepped the MVP for demo.
+
+Tasks Completed
+---------------
+1. Hot Drinks/Sweetness/Ice Customization — Wyatt            INCOMPLETE
+   Allow customer and cashier views to customize cold/hot drinks,
+   sweetness level, and ice amount.
+
+2. Menu Categorization Tab — Ahmet                           COMPLETE
+   Display menu items and separate them by drink category in the
+   menu page.
+
+3. Cashier Landing Page — Cannon                             COMPLETE
+   Create the layout for the customer page, and add buttons for
+   all menu items.
+
+4. Checkout Tab — Prathinav                                  COMPLETE
+   Develop functionality so the cashier can create and checkout
+   an order with database interaction.
+
+5. Checkout Upsell — Omer                                    INCOMPLETE
+   Display quick add menu before checking out on customer page.
+
+Before Next Meeting
+-------------------
+- Finish up commits for GitHub at the end of sprint 1.
+- Assign a multitude of sprint 2 tasks to everyone.
+
+New Task Assignments
+--------------------
+1. Show Recent Orders — Ahmet
+   Create a tab for recent orders in the cashier view.
+
+2. Manager Landing Page — Cannon
+   Create the rudimentary structure for the manager page.
+
+3. Happy Hour — Prathinav
+   For a certain span of time on certain days, add a discount
+   to orders.
+
+Minutes from Meeting
+--------------------
+In this meeting we discussed individually finalizing our tasks to prepare for
+the sprint 1 demo. We checked that the current version of the MVP was working correctly.
+We also assigned new tasks for those who finished their previous tasks.

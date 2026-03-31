@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
@@ -49,6 +50,13 @@ export default function MenuBoardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
+      <Link
+        href="/"
+        className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"
+      >
+        Back to Home
+      </Link>
+
       <header className="border-b px-6 py-4">
         <h1 className="text-2xl font-bold">Menu Board</h1>
       </header>

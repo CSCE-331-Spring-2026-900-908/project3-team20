@@ -1,0 +1,63 @@
+SPRINT 1 - MEETING 2
+====================
+
+Attendees
+---------
+Prathinav Allena, Wyatt Voigt, Cannon Cavazos, Omer Aslan, Ahmet Aykanat
+
+Agenda
+------
+1. Fixing a fatal error with the deployment of Vercel where it was
+   working locally but not on Vercel.
+2. Status update since last meeting.
+
+Accomplishments
+---------------
+- Fixed the error preventing the site from working on Vercel.
+- Got the website up and running again with basic functionality.
+
+Tasks Completed
+---------------
+1. Login Portal — Wyatt                                 COMPLETE
+   Create the basic layout for the opening login page, and allow
+   for users to access every other page of the website.
+
+2. Menu Categorization Tab — Ahmet                  INCOMPLETE
+   Display menu items and separate them by drink category in the
+   menu page.
+
+3. Cashier Landing Page — Cannon                    INCOMPLETE
+   Create the layout for the customer page, and add buttons for
+   all menu items.
+
+4. Checkout Tab — Prathinav                         INCOMPLETE
+   Develop functionality so the cashier can create and checkout
+   an order with database interaction.
+
+5. Customer Kiosk — Omer                                COMPLETE
+   Create the basic layout and database interactions for the
+   customer page.
+
+Before Next Meeting
+-------------------
+- Work on finishing the sprint tasks assigned.
+- Prepare the final MVP for the sprint 1 demo.
+
+New Task Assignments
+--------------------
+1. Hot Drinks/Sweetness/Ice Customization — Wyatt
+   Allow customer and cashier views to customize cold/hot drinks,
+   sweetness level, and ice amount.
+
+2. Checkout Upsell — Omer
+   Display quick add menu before checking out on customer page.
+
+Minutes from Meeting
+------------------------------
+In this meeting we pushed our meeting earlier due to a fatal error
+which had to be addressed before the MVP demo in sprint 1. We
+struggled to find the error which caused the Vercel website to not
+work properly while the local host was running well. Finally we found
+a line of code causing this mismatch and fixed it, allowing everyone
+to finish their tasks for the sprint 1 demo and be ready with the
+MVP functioning properly.

@@ -72,8 +72,8 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
       const data = await res.json();
 
       if (res.ok && data.success) {
-        localStorage.setItem("employeeId", username);
-        localStorage.setItem("employeeName", username);
+        localStorage.setItem("employeeId", data.id);
+        localStorage.setItem("employeeName", data.name);
         // Redirect to the requested page on successful login
         router.push(targetHref);
       } else {

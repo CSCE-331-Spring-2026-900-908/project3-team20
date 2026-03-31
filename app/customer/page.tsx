@@ -59,7 +59,7 @@ export default function CustomerPage() {
   };
 
   return (
-    <div className="flex h-screen bg-white text-black">
+    <div className="flex h-screen bg-[#f5efe6] text-black">
       <Link
         href="/"
         className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"
@@ -98,10 +98,10 @@ export default function CustomerPage() {
               <button
                 key={drink.drinkid}
                 onClick={() => setCustomizing(drink)}
-                className="border rounded p-4 text-left hover:bg-gray-50 min-h-[80px] flex flex-col justify-between"
+                className="bg-white border border-gray-200 rounded-xl p-4 text-left hover:bg-gray-50 aspect-square flex flex-col justify-between"
               >
                 <span className="font-medium">{drink.name}</span>
-                <span className="text-gray-600 mt-1">${Number(drink.cost).toFixed(2)}</span>
+                <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
               </button>
             ))}
           </div>
@@ -112,7 +112,7 @@ export default function CustomerPage() {
       </div>
 
       {/* Cart sidebar */}
-      <div className="w-80 border-l flex flex-col bg-gray-50">
+      <div className="w-80 border-l flex flex-col bg-white">
         <div className="px-4 py-4 border-b">
           <h2 className="text-lg font-bold">Your Order</h2>
         </div>

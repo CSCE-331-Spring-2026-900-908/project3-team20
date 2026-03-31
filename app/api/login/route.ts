@@ -62,7 +62,11 @@ export async function POST(req: NextRequest) {
       }
 
       // Login successful
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ 
+        success: true, 
+        id: employee.employeeid,
+        name: employee.name
+      });
 
     } finally {
       // Always release the client back to the pool, even if an error occurs

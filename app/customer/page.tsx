@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, lineTotal } from '@/types';
 
 export default function CustomerPage() {
@@ -171,6 +171,8 @@ export default function CustomerPage() {
           onClose={() => setCustomizing(null)}
         />
       )}
+
+      <ChatWidget />
     </div>
   );
 }
@@ -287,6 +289,102 @@ function CustomizeModal({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+function ChatWidget() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'assistant', text: 'Hi! I can help you with our menu, recommendations, toppings, or allergen info. Ask me anything!' },
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text }]);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'assistant', text: data.reply || 'Sorry, something went wrong.' }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I couldn't connect. Please try again." }]);
+    }
+    setLoading(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-32 right-6 z-50 w-14 h-14 rounded-full bg-black text-white text-2xl shadow-lg hover:bg-gray-800 flex items-center justify-center"
+        aria-label="Open chat"
+      >
+        ?
+      </button>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-32 right-6 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
+      <div className="px-4 py-3 bg-black text-white flex items-center justify-between shrink-0">
+        <span className="font-semibold text-sm">Chat Assistant</span>
+        <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
+              msg.role === 'user' ? 'bg-black text-white' : 'bg-gray-100 text-black'
+            }`}>
+              {msg.text}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-400">Typing...</div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="border-t p-2 flex gap-2 shrink-0">
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send()}
+          placeholder="Ask a question..."
+          className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+        />
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          className="px-3 py-2 bg-black text-white rounded-lg text-sm disabled:opacity-40 hover:bg-gray-800"
+        >
+          Send
+        </button>
       </div>
     </div>
   );

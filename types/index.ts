@@ -19,6 +19,20 @@ export interface CartItemTopping {
   amount: number;
 }
 
+export interface Ingredient {
+  ingredientid: number;
+  name: string;
+  totalquantity: number;
+  cost: number;
+}
+
+export interface MiscItem {
+  anythingid: number;
+  name: string;
+  price: number;
+  totalquantity: number;
+}
+
 export interface CartItem {
   drink: Drink;
   quantity: number;

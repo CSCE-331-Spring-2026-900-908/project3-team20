@@ -25,6 +25,12 @@ export default function CustomerPage() {
 
   const categories = ['All', ...Array.from(new Set(drinks.map(d => d.category || 'Other')))];
 
+  const categoryCardColors: Record<string, string> = {
+    'Fruity':   'bg-pink-50 border-pink-200 hover:bg-pink-100',
+    'Milk Tea': 'bg-amber-50 border-amber-200 hover:bg-amber-100',
+    'Other':    'bg-gray-50 border-gray-200 hover:bg-gray-100',
+  };
+
   const filteredDrinks = selectedCategory === 'All'
     ? drinks
     : drinks.filter(d => (d.category || 'Other') === selectedCategory);
@@ -93,12 +99,12 @@ export default function CustomerPage() {
 
         {/* Drink grid */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredDrinks.map(drink => (
               <button
                 key={drink.drinkid}
                 onClick={() => setCustomizing(drink)}
-                className="bg-white border border-gray-200 rounded-xl p-4 text-left hover:bg-gray-50 aspect-square flex flex-col justify-between"
+                className={`border rounded-xl p-4 text-left aspect-square flex flex-col justify-between ${categoryCardColors[drink.category || 'Other'] || categoryCardColors['Other']}`}
               >
                 <span className="font-medium">{drink.name}</span>
                 <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>

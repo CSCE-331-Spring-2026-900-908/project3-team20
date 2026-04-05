@@ -19,6 +19,15 @@ export default function ManagerPage() {
   const [addCost, setAddCost] = useState('');
   const [addError, setAddError] = useState('');
 
+  // Edit/reorder dialog state
+  const [editTarget, setEditTarget] = useState<{
+    type: AddType;
+    id: number;
+    name: string;
+    currentQty: number;
+  } | null>(null);
+  const [editQuantity, setEditQuantity] = useState('');
+
   // Delete confirm state
   const [deleteTarget, setDeleteTarget] = useState<{
     type: AddType;
@@ -86,6 +95,32 @@ export default function ManagerPage() {
     fetchAll();
   };
 
+  const openEdit = (type: AddType, id: number, name: string, currentQty: number) => {
+    setEditTarget({ type, id, name, currentQty });
+    setEditQuantity(String(currentQty));
+  };
+
+  const handleEditSave = async () => {
+    if (!editTarget) return;
+    const qty = parseInt(editQuantity) || 0;
+    const delta = qty - editTarget.currentQty;
+    if (delta === 0) { setEditTarget(null); return; }
+
+    const endpoints: Record<AddType, { url: string; key: string }> = {
+      ingredient: { url: '/api/ingredients', key: 'ingredientid' },
+      topping: { url: '/api/toppings', key: 'toppingid' },
+      misc: { url: '/api/misc', key: 'anythingid' },
+    };
+    const { url, key } = endpoints[editTarget.type];
+    await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [key]: editTarget.id, delta }),
+    });
+    setEditTarget(null);
+    fetchAll();
+  };
+
   const costLabel = addType === 'ingredient' ? 'Cost' : 'Price';
 
   return (
@@ -124,13 +159,14 @@ export default function ManagerPage() {
             {ingredients.map(ing => (
               <div
                 key={ing.ingredientid}
-                className="rounded-lg border-2 border-amber-400 bg-white p-4 flex flex-col gap-1 group relative"
+                onClick={() => openEdit('ingredient', ing.ingredientid, ing.name, ing.totalquantity)}
+                className="rounded-lg border-2 border-amber-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
               >
                 <span className="font-bold text-sm">{ing.name}</span>
                 <span className="text-gray-600 text-xs">Quantity: {ing.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Cost: ${Number(ing.cost).toFixed(2)}</span>
                 <button
-                  onClick={() => setDeleteTarget({ type: 'ingredient', id: ing.ingredientid, name: ing.name })}
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'ingredient', id: ing.ingredientid, name: ing.name }); }}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
                   title="Delete"
                 >
@@ -148,13 +184,14 @@ export default function ManagerPage() {
             {toppings.map(top => (
               <div
                 key={top.toppingid}
-                className="rounded-lg border-2 border-blue-400 bg-white p-4 flex flex-col gap-1 group relative"
+                onClick={() => openEdit('topping', top.toppingid, top.name, top.totalquantity)}
+                className="rounded-lg border-2 border-blue-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
               >
                 <span className="font-bold text-sm">{top.name}</span>
                 <span className="text-gray-600 text-xs">Quantity: {top.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Price: ${Number(top.price).toFixed(2)}</span>
                 <button
-                  onClick={() => setDeleteTarget({ type: 'topping', id: top.toppingid, name: top.name })}
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'topping', id: top.toppingid, name: top.name }); }}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
                   title="Delete"
                 >
@@ -172,13 +209,14 @@ export default function ManagerPage() {
             {miscItems.map(m => (
               <div
                 key={m.anythingid}
-                className="rounded-lg border-2 border-emerald-400 bg-white p-4 flex flex-col gap-1 group relative"
+                onClick={() => openEdit('misc', m.anythingid, m.name, m.totalquantity)}
+                className="rounded-lg border-2 border-emerald-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
               >
                 <span className="font-bold text-sm">{m.name}</span>
                 <span className="text-gray-600 text-xs">Quantity: {m.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Price: ${Number(m.price).toFixed(2)}</span>
                 <button
-                  onClick={() => setDeleteTarget({ type: 'misc', id: m.anythingid, name: m.name })}
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'misc', id: m.anythingid, name: m.name }); }}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
                   title="Delete"
                 >
@@ -237,6 +275,51 @@ export default function ManagerPage() {
               <button onClick={handleAdd} className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">
                 Add
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Quantity Dialog */}
+      {editTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-1">Update Quantity</h3>
+            <p className="text-sm text-gray-500 mb-4">{editTarget.name}</p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+              <input
+                type="number"
+                min={0}
+                max={100000}
+                value={editQuantity}
+                onChange={e => setEditQuantity(e.target.value)}
+                className="w-full border rounded px-3 py-2 text-sm"
+              />
+              {(parseInt(editQuantity) || 0) !== editTarget.currentQty && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Change: {(parseInt(editQuantity) || 0) - editTarget.currentQty > 0 ? '+' : ''}{(parseInt(editQuantity) || 0) - editTarget.currentQty}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={() => {
+                  setEditTarget(null);
+                  setDeleteTarget({ type: editTarget.type, id: editTarget.id, name: editTarget.name });
+                }}
+                className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setEditTarget(null)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button onClick={handleEditSave} className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>

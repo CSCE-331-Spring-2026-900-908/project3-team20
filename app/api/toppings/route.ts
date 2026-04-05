@@ -31,6 +31,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const { toppingid, delta } = await request.json();
+    await pool.query(
+      'UPDATE toppings SET totalquantity = totalquantity + $1 WHERE toppingid = $2',
+      [delta, toppingid]
+    );
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { toppingid } = await request.json();

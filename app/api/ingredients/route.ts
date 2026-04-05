@@ -32,6 +32,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const { ingredientid, delta } = await request.json();
+    await pool.query(
+      'UPDATE ingredients SET totalquantity = totalquantity + $1 WHERE ingredientid = $2',
+      [delta, ingredientid]
+    );
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { ingredientid } = await request.json();

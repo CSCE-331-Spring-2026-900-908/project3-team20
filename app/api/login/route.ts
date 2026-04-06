@@ -4,7 +4,9 @@ import { Pool } from "pg";
 // Database connection pool - reads DATABASE_URL from environment variables
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.DATABASE_URL?.includes("localhost") || process.env.DATABASE_URL?.includes("127.0.0.1")
+    ? false
+    : { rejectUnauthorized: false },
 });
 
 /**

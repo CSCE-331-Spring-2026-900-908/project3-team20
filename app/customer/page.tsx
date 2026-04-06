@@ -46,7 +46,9 @@ export default function CustomerPage() {
     setCart(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  const checkout = async () => {
+  const [showUpsell, setShowUpsell] = useState(false);
+
+  const placeOrder = async () => {
     if (cart.length === 0) return;
     try {
       const res = await fetch('/api/orders', {
@@ -62,6 +64,11 @@ export default function CustomerPage() {
     } catch (err) {
       console.error('Checkout failed:', err);
     }
+  };
+
+  const checkout = () => {
+    if (cart.length === 0) return;
+    setShowUpsell(true);
   };
 
   return (
@@ -175,6 +182,17 @@ export default function CustomerPage() {
           toppings={toppings}
           onAdd={addToCart}
           onClose={() => setCustomizing(null)}
+        />
+      )}
+
+      {/* Upsell attempt */}
+      {showUpsell && (
+        <UpsellModal
+          drinks={drinks}
+          cart={cart}
+          onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [] }])}
+          onConfirm={() => { setShowUpsell(false); placeOrder(); }}
+          onClose={() => setShowUpsell(false)}
         />
       )}
 
@@ -294,6 +312,76 @@ function CustomizeModal({
               Add to Order
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UpsellModal({
+  drinks,
+  cart,
+  onAddDrink,
+  onConfirm,
+  onClose,
+}: {
+  drinks: Drink[];
+  cart: CartItem[];
+  onAddDrink: (drink: Drink) => void;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
+  const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
+  const [added, setAdded] = useState<Set<number>>(new Set());
+
+  const handleAdd = (drink: Drink) => {
+    onAddDrink(drink);
+    setAdded(prev => new Set(prev).add(drink.drinkid));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b">
+          <h3 className="text-lg font-bold">Before you go...</h3>
+          <p className="text-sm text-gray-500 mt-0.5">Want to add anything else to your order?</p>
+        </div>
+
+        <div className="p-4 space-y-2">
+          {suggestions.length === 0 && (
+            <p className="text-sm text-gray-400 text-center py-2">You got it all!</p>
+          )}
+          {suggestions.map(drink => (
+            <div key={drink.drinkid} className="flex items-center justify-between border rounded-lg px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">{drink.name}</p>
+                <p className="text-xs text-gray-500">${Number(drink.cost).toFixed(2)}</p>
+              </div>
+              <button
+                onClick={() => handleAdd(drink)}
+                disabled={added.has(drink.drinkid)}
+                className="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors disabled:bg-green-100 disabled:text-green-700 bg-black text-white hover:bg-gray-800 disabled:cursor-default"
+              >
+                {added.has(drink.drinkid) ? 'Added!' : '+ Add'}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="px-4 pb-4 flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50"
+          >
+            Keep browsing
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
+          >
+            Place Order
+          </button>
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TranslationProvider } from "./context/TranslationContext";
 import { TranslateButton } from "./components/TranslateButton";
+import { ButtonSizeProvider } from "./context/ButtonSizeContext";
+import { ButtonSizeToggle } from "./components/ButtonSizeToggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,12 +32,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <TranslationProvider>
-          <header className="flex justify-end p-4 bg-gray-50 border-b border-gray-200">
-            <TranslateButton />
-          </header>
-          {children}
-        </TranslationProvider>
+        <ButtonSizeProvider>
+          <TranslationProvider>
+            <header className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-b border-gray-200">
+              <ButtonSizeToggle />
+              <TranslateButton />
+            </header>
+            {children}
+          </TranslationProvider>
+        </ButtonSizeProvider>
       </body>
     </html>
   );

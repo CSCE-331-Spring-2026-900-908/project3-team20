@@ -31,3 +31,13 @@ body {
   font-weight: normal;
   font-style: normal;
 }
+
+/* Accessibility feature: buttons size */
+
+html.btn-size-large {
+  font-size: 18px;
+}
+
+html.btn-size-xl {
+  font-size: 21px;
+}

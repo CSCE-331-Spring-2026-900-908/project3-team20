@@ -1,0 +1,76 @@
+SPRINT 2 - MEETING 1
+====================
+Prepared by: Cannon Cavazos
+Meeting Date: 4/5/2025
+
+Attendees
+---------
+Wyatt Voigt, Cannon Cavazos, Omer Aslan, Ahmet Asim Aykanat
+
+Agenda
+------
+1. Setting Up API Keys
+2. Work schedule for upcoming week
+
+Accomplishments
+---------------
+- Finished chatbot interaction
+- Added translation feature via the Google Translate API
+- Added back buttons to each page
+- Cleaner landing page
+- Easy-to-view menu board
+
+Tasks
+-----
+ 1. Ingredient Tab — Omer                                        COMPLETE
+    Add ingredient tab to manager view.
+
+ 2. Manager Landing Page — Omer                                  COMPLETE
+    Create a landing page when manager view is clicked on.
+
+ 3. Ingredient Interaction (Adding and Dropping) — Omer          COMPLETE
+    Add a way to add and remove ingredients in manager view.
+
+ 4. Adjustable Button Sizes — Ahmet                              INCOMPLETE
+    Create a way to increase button sizes for sight-impaired users.
+
+ 5. Translation API — Wyatt                                      COMPLETE
+    Use an API to translate the website into multiple languages.
+
+ 6. AI Chatbot for Menu & Ordering Help — Cannon                 INCOMPLETE
+
+ 7. Reports — Cannon                                             INCOMPLETE
+    Create a tab to view reports in the manager view.
+
+ 8. Hot Drinks/Sweetness Level/Ice Customization — Prathinav     INCOMPLETE
+
+ 9. No Scroll on Menu — Omer                                     INCOMPLETE
+
+10. Back Button (Custom Navigation) — Prathinav                  COMPLETE
+
+11. Spread Out Drinks UI — Omer                                  INCOMPLETE
+    Less cluttered drink display.
+
+12. Checkout Upsell — Ahmet                                      INCOMPLETE
+    Add a quick add menu when checking out.
+
+13. Color Scheme Toggle (Dark/Light Mode) — Prathinav            INCOMPLETE
+    Create a contrasting light mode for color-blind users.
+
+14. Manager Low Stock Alerts — Wyatt                             INCOMPLETE
+
+15. Add Tip Option (20%) — Cannon                                INCOMPLETE
+
+16. Happy Hour (Time-Based Pricing) — Ahmet                      INCOMPLETE
+
+17. Cash/Credit Payment Option — Prathinav                       INCOMPLETE
+
+Before Next Meeting
+-------------------
+- Resume work on the sprint deliverables, staying in contact to ensure work.
+
+Minutes
+-------
+- Discussed setting up API keys through Vercel
+- Determined what had been finished so far
+- Decided to work on User Studies assignment tomorrow during/after lab

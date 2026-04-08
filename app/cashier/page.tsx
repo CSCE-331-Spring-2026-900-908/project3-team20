@@ -12,6 +12,8 @@ const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
 const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
 const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['25%', '50%', '75%', '100%'];
 const ICE_OPTIONS: DrinkCustomization['ice'][] = ['Less', 'Normal', 'More'];
+const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
+type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
 
 export default function CashierPage() {
     const [drinks, setDrinks] = useState<Drink[]>([]);
@@ -24,6 +26,7 @@ export default function CashierPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [showUpsell, setShowUpsell] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
 
     useEffect(() => {
         const storedEmployeeId = localStorage.getItem('employeeId');
@@ -209,6 +212,22 @@ export default function CashierPage() {
                         <span className="font-bold">Total</span>
                         <span className="font-bold">${cartTotal.toFixed(2)}</span>
                     </div>
+                    <div className="mb-3">
+                        <label className="block text-sm font-medium mb-1">Payment</label>
+                        <div className="customization-slider">
+                            {PAYMENT_OPTIONS.map(option => (
+                                <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => setPaymentMethod(option)}
+                                    aria-pressed={paymentMethod === option}
+                                    className={`customization-option ${paymentMethod === option ? 'customization-option-active' : ''}`}
+                                >
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <button
                         onClick={checkout}
                         disabled={cart.length === 0}
@@ -217,7 +236,7 @@ export default function CashierPage() {
                         Place Order
                     </button>
                     {orderPlaced && (
-                        <p className="text-green-600 text-center text-sm mt-2">Order placed successfully!</p>
+                        <p className="text-green-600 text-center text-sm mt-2">Order placed successfully! Payment: {paymentMethod}</p>
                     )}
                 </div>
             </div>

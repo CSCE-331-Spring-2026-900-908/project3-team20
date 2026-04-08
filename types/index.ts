@@ -21,8 +21,8 @@ export interface CartItemTopping {
 
 export interface DrinkCustomization {
   hot: 'Yes' | 'No';
-  sweetness: '25%' | '50%' | '75%' | '100%';
-  ice: 'Less' | 'Normal' | 'More';
+  sweetness: '0%' | '25%' | '50%' | '75%' | '100%';
+  ice: 'None' | 'Less' | 'Normal' | 'More';
 }
 
 export interface Ingredient {

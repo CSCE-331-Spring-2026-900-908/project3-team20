@@ -10,10 +10,11 @@ const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
   ice: 'Normal',
 };
 const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
-const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['25%', '50%', '75%', '100%'];
-const ICE_OPTIONS: DrinkCustomization['ice'][] = ['Less', 'Normal', 'More'];
+const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['0%', '25%', '50%', '75%', '100%'];
+const ICE_OPTIONS: DrinkCustomization['ice'][] = ['None', 'Less', 'Normal', 'More'];
 const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
 type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
+const HIDDEN_CUSTOMIZATION_TOPPINGS = new Set(['hot', 'sugar', 'ice']);
 
 export default function CustomerPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
@@ -248,18 +249,22 @@ function CustomizeModal({
   onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[], customization: DrinkCustomization) => void;
   onClose: () => void;
 }) {
+  const selectableToppings = toppings.filter(
+    topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
+  );
   const [quantity, setQuantity] = useState(1);
   const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>({});
   const [hot, setHot] = useState<DrinkCustomization['hot']>(DEFAULT_CUSTOMIZATION.hot);
   const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(DEFAULT_CUSTOMIZATION.sweetness);
   const [ice, setIce] = useState<DrinkCustomization['ice']>(DEFAULT_CUSTOMIZATION.ice);
+  const iceDisabled = hot === 'Yes';
 
   const setToppingAmount = (id: number, amount: number) => {
     setToppingAmounts(prev => ({ ...prev, [id]: Math.max(0, Math.min(10, amount)) }));
   };
 
   const handleAdd = () => {
-    const selected: CartItemTopping[] = toppings
+    const selected: CartItemTopping[] = selectableToppings
       .filter(t => (toppingAmounts[t.toppingid] || 0) > 0)
       .map(t => ({
         toppingid: t.toppingid,
@@ -270,7 +275,7 @@ function CustomizeModal({
     onAdd(drink, quantity, selected, { hot, sweetness, ice });
   };
 
-  const toppingCost = toppings.reduce(
+  const toppingCost = selectableToppings.reduce(
     (sum, t) => sum + Number(t.price) * (toppingAmounts[t.toppingid] || 0),
     0
   );
@@ -313,7 +318,12 @@ function CustomizeModal({
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setHot(option)}
+                    onClick={() => {
+                      setHot(option);
+                      if (option === 'Yes') {
+                        setIce('None');
+                      }
+                    }}
                     aria-pressed={hot === option}
                     className={`customization-option ${hot === option ? 'customization-option-active' : ''}`}
                   >
@@ -341,15 +351,20 @@ function CustomizeModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Ice</label>
+              <label className={`block text-sm font-medium mb-1 ${iceDisabled ? 'text-gray-400' : ''}`}>Ice</label>
               <div className="customization-slider">
                 {ICE_OPTIONS.map(option => (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setIce(option)}
+                    onClick={() => {
+                      if (!iceDisabled) {
+                        setIce(option);
+                      }
+                    }}
+                    disabled={iceDisabled}
                     aria-pressed={ice === option}
-                    className={`customization-option ${ice === option ? 'customization-option-active' : ''}`}
+                    className={`customization-option ${ice === option ? 'customization-option-active' : ''} ${iceDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {option}
                   </button>
@@ -359,11 +374,11 @@ function CustomizeModal({
           </div>
 
           {/* Toppings */}
-          {toppings.length > 0 && (
+          {selectableToppings.length > 0 && (
             <div>
               <label className="block text-sm font-medium mb-2">Toppings</label>
               <div className="space-y-2">
-                {toppings.map(t => (
+                {selectableToppings.map(t => (
                   <div key={t.toppingid} className="flex items-center justify-between">
                     <div>
                       <span className="text-sm">{t.name}</span>

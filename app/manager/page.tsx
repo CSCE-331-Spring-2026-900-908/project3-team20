@@ -122,6 +122,7 @@ export default function ManagerPage() {
   };
 
   const costLabel = addType === 'ingredient' ? 'Cost' : 'Price';
+  const visibleToppings = toppings.filter(top => top.name.trim().toLowerCase() !== 'hot');
 
   return (
     <main className="min-h-screen bg-gray-50 text-black">
@@ -181,7 +182,7 @@ export default function ManagerPage() {
         <section>
           <h2 className="text-lg font-bold mb-3">Toppings</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {toppings.map(top => (
+            {visibleToppings.map(top => (
               <div
                 key={top.toppingid}
                 onClick={() => openEdit('topping', top.toppingid, top.name, top.totalquantity)}

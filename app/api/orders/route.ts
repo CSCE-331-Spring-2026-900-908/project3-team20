@@ -1,8 +1,33 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { CartItem, lineTotal } from '@/types';
+import { CartItem, DrinkCustomization, lineTotal } from '@/types';
 
 const KIOSK_EMPLOYEE_ID = 1;
+const SWEETNESS_TO_SUGAR_USAGE: Record<DrinkCustomization['sweetness'], number> = {
+  '0%': 0,
+  '25%': 1,
+  '50%': 2,
+  '75%': 3,
+  '100%': 4,
+};
+const ICE_TO_TOPPING_USAGE: Record<DrinkCustomization['ice'], number> = {
+  None: 0,
+  Less: 1,
+  Normal: 2,
+  More: 3,
+};
+
+function normalizeToppingName(name: string) {
+  return name.trim().toLowerCase();
+}
+
+function getCustomizationInventoryUsage(customization: DrinkCustomization) {
+  return [
+    { name: 'hot', amount: customization.hot === 'Yes' ? 1 : 0 },
+    { name: 'sugar', amount: SWEETNESS_TO_SUGAR_USAGE[customization.sweetness] ?? 0 },
+    { name: 'ice', amount: ICE_TO_TOPPING_USAGE[customization.ice] ?? 0 },
+  ].filter(item => item.amount > 0);
+}
 
 export async function POST(request: Request) {
   const client = await pool.connect();
@@ -25,6 +50,22 @@ export async function POST(request: Request) {
 
     await client.query('BEGIN');
 
+    const customizationInventoryNames = Array.from(new Set(
+      items.flatMap(item => getCustomizationInventoryUsage(item.customization).map(usage => usage.name))
+    ));
+    const customizationToppingIds = new Map<string, number>();
+
+    if (customizationInventoryNames.length > 0) {
+      const customizationToppingsRes = await client.query(
+        'SELECT toppingid, name FROM toppings WHERE LOWER(name) = ANY($1::text[])',
+        [customizationInventoryNames]
+      );
+
+      for (const row of customizationToppingsRes.rows as Array<{ toppingid: number; name: string }>) {
+        customizationToppingIds.set(normalizeToppingName(row.name), Number(row.toppingid));
+      }
+    }
+
     // 1. Insert order
     const orderRes = await client.query(
       'INSERT INTO orders (customerid, employeeid, total, date, hour) VALUES ($1, $2, $3, $4, $5) RETURNING orderid',
@@ -40,11 +81,26 @@ export async function POST(request: Request) {
       );
       const orderItemsId = itemRes.rows[0].orderitemsid;
 
+      const toppingUsage = new Map<number, number>();
+
       for (const t of item.toppings) {
         if (t.amount > 0) {
+          toppingUsage.set(t.toppingid, (toppingUsage.get(t.toppingid) ?? 0) + t.amount);
+        }
+      }
+
+      for (const usage of getCustomizationInventoryUsage(item.customization)) {
+        const toppingId = customizationToppingIds.get(usage.name);
+        if (toppingId) {
+          toppingUsage.set(toppingId, (toppingUsage.get(toppingId) ?? 0) + usage.amount);
+        }
+      }
+
+      for (const [toppingId, amount] of toppingUsage.entries()) {
+        if (amount > 0) {
           await client.query(
             'INSERT INTO orderitemstop (orderitemsid, toppingid, amountused) VALUES ($1, $2, $3)',
-            [orderItemsId, t.toppingid, t.amount]
+            [orderItemsId, toppingId, amount]
           );
         }
       }

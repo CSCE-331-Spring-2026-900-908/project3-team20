@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drink, Topping, CartItem, CartItemTopping, lineTotal } from '@/types';
+import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal } from '@/types';
+
+const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
+  hot: 'No',
+  sweetness: '100%',
+  ice: 'Normal',
+};
+const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
+const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['25%', '50%', '75%', '100%'];
+const ICE_OPTIONS: DrinkCustomization['ice'][] = ['Less', 'Normal', 'More'];
 
 export default function CustomerPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
@@ -37,8 +46,13 @@ export default function CustomerPage() {
 
   const cartTotal = cart.reduce((sum, item) => sum + lineTotal(item), 0);
 
-  const addToCart = useCallback((drink: Drink, quantity: number, selectedToppings: CartItemTopping[]) => {
-    setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings }]);
+  const addToCart = useCallback((
+    drink: Drink,
+    quantity: number,
+    selectedToppings: CartItemTopping[],
+    customization: DrinkCustomization
+  ) => {
+    setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings, customization }]);
     setCustomizing(null);
   }, []);
 
@@ -139,6 +153,9 @@ export default function CustomerPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-medium">{item.drink.name} x{item.quantity}</p>
+                  <p className="text-xs text-gray-500">
+                    Hot: {item.customization.hot} | Sweetness: {item.customization.sweetness} | Ice: {item.customization.ice}
+                  </p>
                   {item.toppings.filter(t => t.amount > 0).map(t => (
                     <p key={t.toppingid} className="text-xs text-gray-500">
                       + {t.name} x{t.amount}
@@ -190,7 +207,7 @@ export default function CustomerPage() {
         <UpsellModal
           drinks={drinks}
           cart={cart}
-          onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [] }])}
+          onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
           onConfirm={() => { setShowUpsell(false); placeOrder(); }}
           onClose={() => setShowUpsell(false)}
         />
@@ -209,11 +226,14 @@ function CustomizeModal({
 }: {
   drink: Drink;
   toppings: Topping[];
-  onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[]) => void;
+  onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[], customization: DrinkCustomization) => void;
   onClose: () => void;
 }) {
   const [quantity, setQuantity] = useState(1);
   const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>({});
+  const [hot, setHot] = useState<DrinkCustomization['hot']>(DEFAULT_CUSTOMIZATION.hot);
+  const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(DEFAULT_CUSTOMIZATION.sweetness);
+  const [ice, setIce] = useState<DrinkCustomization['ice']>(DEFAULT_CUSTOMIZATION.ice);
 
   const setToppingAmount = (id: number, amount: number) => {
     setToppingAmounts(prev => ({ ...prev, [id]: Math.max(0, Math.min(10, amount)) }));
@@ -228,7 +248,7 @@ function CustomizeModal({
         price: Number(t.price),
         amount: toppingAmounts[t.toppingid],
       }));
-    onAdd(drink, quantity, selected);
+    onAdd(drink, quantity, selected, { hot, sweetness, ice });
   };
 
   const toppingCost = toppings.reduce(
@@ -263,6 +283,59 @@ function CustomizeModal({
               >
                 +
               </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Hot Drink?</label>
+              <div className="customization-slider">
+                {HOT_OPTIONS.map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setHot(option)}
+                    aria-pressed={hot === option}
+                    className={`customization-option ${hot === option ? 'customization-option-active' : ''}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Sweetness</label>
+              <div className="customization-slider">
+                {SWEETNESS_OPTIONS.map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSweetness(option)}
+                    aria-pressed={sweetness === option}
+                    className={`customization-option ${sweetness === option ? 'customization-option-active' : ''}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Ice</label>
+              <div className="customization-slider">
+                {ICE_OPTIONS.map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setIce(option)}
+                    aria-pressed={ice === option}
+                    className={`customization-option ${ice === option ? 'customization-option-active' : ''}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

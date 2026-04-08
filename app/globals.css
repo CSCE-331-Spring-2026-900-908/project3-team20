@@ -41,3 +41,145 @@ html.btn-size-large {
 html.btn-size-xl {
   font-size: 21px;
 }
+
+html.dark-mode {
+  color-scheme: dark;
+  --background: #111827;
+  --foreground: #f9fafb;
+}
+
+html.dark-mode .bg-\[\#f8f3e3\],
+html.dark-mode .bg-\[\#f5efe6\],
+html.dark-mode .bg-white,
+html.dark-mode .bg-gray-50,
+html.dark-mode .bg-gray-100,
+html.dark-mode .bg-gray-200 {
+  background-color: #111827 !important;
+}
+
+html.dark-mode .border,
+html.dark-mode .border-b,
+html.dark-mode .border-l,
+html.dark-mode .border-gray-200,
+html.dark-mode .border-gray-300,
+html.dark-mode .border-stone-200,
+html.dark-mode .border-stone-300,
+html.dark-mode .border-black {
+  border-color: #374151 !important;
+}
+
+html.dark-mode .text-black,
+html.dark-mode .text-stone-900,
+html.dark-mode .text-\[\#2A2A2A\] {
+  color: #f9fafb !important;
+}
+
+html.dark-mode .text-gray-400,
+html.dark-mode .text-gray-500,
+html.dark-mode .text-gray-600,
+html.dark-mode .text-gray-700,
+html.dark-mode .text-stone-400,
+html.dark-mode .text-stone-500,
+html.dark-mode .text-stone-600,
+html.dark-mode .text-stone-700 {
+  color: #d1d5db !important;
+}
+
+html.dark-mode .bg-black {
+  background-color: #374151 !important;
+}
+
+html.dark-mode .hover\:bg-gray-50:hover,
+html.dark-mode .hover\:bg-gray-100:hover,
+html.dark-mode .hover\:bg-gray-200:hover,
+html.dark-mode .hover\:bg-gray-300:hover,
+html.dark-mode .hover\:bg-gray-800:hover {
+  background-color: #1f2937 !important;
+}
+
+html.dark-mode .bg-pink-50,
+html.dark-mode .bg-pink-100 {
+  background-color: #3b1d2e !important;
+}
+
+html.dark-mode .border-pink-200,
+html.dark-mode .border-pink-300 {
+  border-color: #be547f !important;
+}
+
+html.dark-mode .hover\:bg-pink-100:hover,
+html.dark-mode .hover\:bg-pink-200:hover {
+  background-color: #4d2439 !important;
+}
+
+html.dark-mode .bg-amber-50,
+html.dark-mode .bg-amber-100 {
+  background-color: #3d2b06 !important;
+}
+
+html.dark-mode .border-amber-200,
+html.dark-mode .border-amber-300 {
+  border-color: #d69e2e !important;
+}
+
+html.dark-mode .hover\:bg-amber-50:hover,
+html.dark-mode .hover\:bg-amber-100:hover,
+html.dark-mode .hover\:bg-amber-200:hover {
+  background-color: #513909 !important;
+}
+
+html.dark-mode .bg-teal-50 {
+  background-color: #123437 !important;
+}
+
+html.dark-mode .border-teal-200 {
+  border-color: #2dd4bf !important;
+}
+
+html.dark-mode .bg-red-50 {
+  background-color: #3b0d0d !important;
+}
+
+html.dark-mode .border-red-200 {
+  border-color: #7f1d1d !important;
+}
+
+html.dark-mode .text-red-400,
+html.dark-mode .text-red-500,
+html.dark-mode .text-red-600 {
+  color: #fca5a5 !important;
+}
+
+html.dark-mode .text-green-600 {
+  color: #86efac !important;
+}
+
+html.dark-mode .text-blue-500 {
+  color: #93c5fd !important;
+}
+
+html.dark-mode .disabled\:bg-green-100:disabled {
+  background-color: #14532d !important;
+}
+
+html.dark-mode .disabled\:text-green-700:disabled {
+  color: #dcfce7 !important;
+}
+
+html.dark-mode .focus\:ring-black:focus {
+  --tw-ring-color: rgba(249, 250, 251, 0.35) !important;
+}
+
+#theme-toggle {
+  font-size: 0 !important;
+}
+
+#theme-toggle::before {
+  content: "Dark Mode";
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+html.dark-mode #theme-toggle::before {
+  content: "Light Mode";
+}

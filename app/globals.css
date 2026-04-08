@@ -183,3 +183,71 @@ html.dark-mode .focus\:ring-black:focus {
 html.dark-mode #theme-toggle::before {
   content: "Light Mode";
 }
+
+.customization-slider {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.375rem;
+  padding: 0.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #f3f4f6;
+}
+
+.customization-option {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: #374151;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.customization-option:hover {
+  background: #e5e7eb;
+}
+
+.customization-option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.2);
+}
+
+.customization-option-active {
+  background: #111827;
+  color: #f9fafb;
+}
+
+.customization-option-active:hover {
+  background: #111827;
+}
+
+html.dark-mode .customization-slider {
+  border-color: #4b5563;
+  background: #1f2937;
+}
+
+html.dark-mode .customization-option {
+  color: #e5e7eb;
+}
+
+html.dark-mode .customization-option:hover {
+  background: #374151;
+}
+
+html.dark-mode .customization-option:focus-visible {
+  box-shadow: 0 0 0 2px rgba(249, 250, 251, 0.22);
+}
+
+html.dark-mode .customization-option-active {
+  background: #f9fafb;
+  color: #111827;
+}
+
+html.dark-mode .customization-option-active:hover {
+  background: #f9fafb;
+}

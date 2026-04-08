@@ -19,6 +19,12 @@ export interface CartItemTopping {
   amount: number;
 }
 
+export interface DrinkCustomization {
+  hot: 'Yes' | 'No';
+  sweetness: '25%' | '50%' | '75%' | '100%';
+  ice: 'Less' | 'Normal' | 'More';
+}
+
 export interface Ingredient {
   ingredientid: number;
   name: string;
@@ -37,6 +43,7 @@ export interface CartItem {
   drink: Drink;
   quantity: number;
   toppings: CartItemTopping[];
+  customization: DrinkCustomization;
 }
 
 export function lineTotal(item: CartItem): number {

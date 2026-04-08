@@ -1,7 +1,7 @@
-SPRINT 2 - MEETING 1
+SPRINT 2 - MEETING 2
 ====================
 Prepared by: Cannon Cavazos
-Meeting Date: 4/5/2025
+Meeting Date: 4/8/2025
 
 Attendees
 ---------
@@ -9,16 +9,14 @@ Wyatt Voigt, Cannon Cavazos, Omer Aslan, Ahmet Asim Aykanat, Prathinav Allena
 
 Agenda
 ------
-1. Setting Up API Keys
-2. Work schedule for upcoming week
+1. Get feedback on our current product
+2. Determine how to fix any issues found
 
 Accomplishments
 ---------------
-- Finished chatbot interaction
-- Added translation feature via the Google Translate API
-- Added back buttons to each page
-- Cleaner landing page
-- Easy-to-view menu board
+- Finished dark mode
+- Can adjust sweetness and ice level on frontend
+- Added cash or credit option
 
 Tasks
 -----
@@ -31,7 +29,7 @@ Tasks
  3. Ingredient Interaction (Adding and Dropping) — Omer          COMPLETE
     Add a way to add and remove ingredients in manager view.
 
- 4. Adjustable Button Sizes — Ahmet                              INCOMPLETE
+ 4. Adjustable Button Sizes — Ahmet                              COMPLETE
     Create a way to increase button sizes for sight-impaired users.
 
  5. Translation API — Wyatt                                      COMPLETE
@@ -42,7 +40,7 @@ Tasks
  7. Reports — Cannon                                             INCOMPLETE
     Create a tab to view reports in the manager view.
 
- 8. Hot Drinks/Sweetness Level/Ice Customization — Prathinav     INCOMPLETE
+ 8. Hot Drinks/Sweetness Level/Ice Customization — Prathinav     COMPLETE
 
  9. No Scroll on Menu — Omer                                     INCOMPLETE
 
@@ -54,7 +52,7 @@ Tasks
 12. Checkout Upsell — Ahmet                                      INCOMPLETE
     Add a quick add menu when checking out.
 
-13. Color Scheme Toggle (Dark/Light Mode) — Prathinav            INCOMPLETE
+13. Color Scheme Toggle (Dark/Light Mode) — Prathinav            COMPLETE
     Create a contrasting light mode for color-blind users.
 
 14. Manager Low Stock Alerts — Wyatt                             INCOMPLETE
@@ -63,7 +61,7 @@ Tasks
 
 16. Happy Hour (Time-Based Pricing) — Ahmet                      INCOMPLETE
 
-17. Cash/Credit Payment Option — Prathinav                       INCOMPLETE
+17. Cash/Credit Payment Option — Prathinav                       C
 
 Before Next Meeting
 -------------------
@@ -71,6 +69,6 @@ Before Next Meeting
 
 Minutes
 -------
-- Discussed setting up API keys through Vercel
-- Determined what had been finished so far
-- Decided to work on User Studies assignment tomorrow during/after lab
+- Discussed how to keep track of iced vs hot drinks
+- Discussed color contrast for Vishnu with Sarah
+- Discussed translate features and found a few errors to fix

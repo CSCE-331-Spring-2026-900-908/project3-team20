@@ -66,13 +66,13 @@ export default function CustomerPage() {
 
   const [showUpsell, setShowUpsell] = useState(false);
 
-  const placeOrder = async () => {
+  const placeOrder = async (tip: number) => {
     if (cart.length === 0) return;
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart }),
+        body: JSON.stringify({ items: cart, tip }),
       });
       if (res.ok) {
         setCart([]);
@@ -228,7 +228,7 @@ export default function CustomerPage() {
           drinks={drinks}
           cart={cart}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
-          onConfirm={() => { setShowUpsell(false); placeOrder(); }}
+          onConfirm={(tip) => { setShowUpsell(false); placeOrder(tip); }}
           onClose={() => setShowUpsell(false)}
         />
       )}
@@ -435,12 +435,19 @@ function UpsellModal({
   drinks: Drink[];
   cart: CartItem[];
   onAddDrink: (drink: Drink) => void;
-  onConfirm: () => void;
+  onConfirm: (tipAmount: number) => void;
   onClose: () => void;
 }) {
   const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
   const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
   const [added, setAdded] = useState<Set<number>>(new Set());
+
+  const subtotal = cart.reduce((sum, item) => sum + lineTotal(item), 0);
+  const TIP_PRESETS = [0, 15, 20, 25] as const;
+  const [tipPct, setTipPct] = useState<number | null>(20);
+  const [customTip, setCustomTip] = useState('');
+
+  const tipAmount = customTip !== ''? Math.max(0, parseFloat(customTip) || 0) : (subtotal * (tipPct ?? 0)) / 100;
 
   const handleAdd = (drink: Drink) => {
     onAddDrink(drink);
@@ -475,7 +482,44 @@ function UpsellModal({
             </div>
           ))}
         </div>
-
+        <div className="border-t pt-3 mt-1 px-4 pb-3">
+          <p className="text-sm font-medium mb-2">Add a tip</p>
+          <div className="grid grid-cols-4 gap-2 mb-2">
+            {TIP_PRESETS.map(pct => (
+              <button
+                key={pct}
+                type="button"
+                onClick={() => { setTipPct(pct); setCustomTip(''); }}
+                className={`py-2 rounded-lg text-xs font-medium border transition-colors ${
+                  tipPct === pct && customTip === ''
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {pct === 0 ? 'No tip' : `${pct}%`}
+                {pct !== 0 && <><br /><span className="font-normal opacity-70">${(subtotal * pct / 100).toFixed(2)}</span></>}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-gray-500 whitespace-nowrap">Custom $</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={customTip}
+              onChange={e => { setCustomTip(e.target.value); setTipPct(null); }}
+              className="flex-1 border rounded-lg px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>Tip</span><span>${tipAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm font-bold mt-1">
+            <span>Total</span><span>${(subtotal + tipAmount).toFixed(2)}</span>
+          </div>
+        </div>
         <div className="px-4 pb-4 flex gap-2">
           <button
             onClick={onClose}
@@ -484,7 +528,7 @@ function UpsellModal({
             Keep browsing
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => onConfirm(tipAmount)}
             className="flex-1 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
           >
             Place Order

@@ -144,8 +144,9 @@ export default function CustomerPage() {
 
       {/* Cart sidebar */}
       <div className="w-80 border-l flex flex-col bg-white">
-        <div className="px-4 py-4 border-b">
+        <div className="px-4 py-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-bold">Your Order</h2>
+          <ChatToggle />
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -233,7 +234,6 @@ export default function CustomerPage() {
         />
       )}
 
-      <ChatWidget />
     </div>
   );
 }
@@ -544,8 +544,39 @@ interface ChatMessage {
   text: string;
 }
 
-function ChatWidget() {
+function ChatToggle() {
   const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white text-xs font-medium hover:bg-gray-800 transition"
+        aria-label="Toggle AI chat"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        AI Chat
+      </button>
+      {open && (
+        <div className="fixed top-12 right-4 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
+          <div className="px-4 py-3 bg-black text-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span className="font-semibold text-sm">AI Chat Assistant</span>
+            </div>
+            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white text-lg leading-none">&times;</button>
+          </div>
+          <ChatMessages />
+        </div>
+      )}
+    </>
+  );
+}
+
+function ChatMessages() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', text: 'Hi! I can help you with our menu, recommendations, toppings, or allergen info. Ask me anything!' },
   ]);
@@ -577,25 +608,8 @@ function ChatWidget() {
     setLoading(false);
   };
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-32 right-6 z-50 w-14 h-14 rounded-full bg-black text-white text-2xl shadow-lg hover:bg-gray-800 flex items-center justify-center"
-        aria-label="Open chat"
-      >
-        ?
-      </button>
-    );
-  }
-
   return (
-    <div className="fixed bottom-32 right-6 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
-      <div className="px-4 py-3 bg-black text-white flex items-center justify-between shrink-0">
-        <span className="font-semibold text-sm">Chat Assistant</span>
-        <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white text-lg leading-none">&times;</button>
-      </div>
-
+    <>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -631,6 +645,6 @@ function ChatWidget() {
           Send
         </button>
       </div>
-    </div>
+    </>
   );
 }

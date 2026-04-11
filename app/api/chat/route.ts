@@ -27,7 +27,7 @@ async function getAIResponse(userMessage: string, menuContext: string): Promise<
           parts: [{ text: userMessage }],
         }],
         generationConfig: {
-          maxOutputTokens: 200,
+          maxOutputTokens: 500,
         },
       }),
     }

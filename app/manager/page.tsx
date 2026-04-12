@@ -5,11 +5,39 @@ import { useState, useEffect } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
 
 type AddType = 'ingredient' | 'topping' | 'misc';
+type ReportRow = Record<string, string | number>;
 
 export default function ManagerPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [miscItems, setMiscItems] = useState<MiscItem[]>([]);
+  const [view, setView] = useState<'inventory' | 'reports'>('inventory');
+
+  const [reports, setReports] = useState<{
+    weekly: ReportRow[];
+    peakDays: ReportRow[];
+    hourly: ReportRow[];
+    menuInventory: ReportRow[];
+  }>({ weekly: [], peakDays: [], hourly: [], menuInventory: [] });
+  const [reportsLoaded, setReportsLoaded] = useState(false);
+  const [reportsLoading, setReportsLoading] = useState(false);
+
+  const fetchReports = async () => {
+    setReportsLoading(true);
+    const [weekly, peakDays, hourly, menuInventory] = await Promise.all([
+      fetch('/api/reports/weekly-sales').then(r => r.json()),
+      fetch('/api/reports/peak-days').then(r => r.json()),
+      fetch('/api/reports/hourly-sales').then(r => r.json()),
+      fetch('/api/reports/menu-inventory').then(r => r.json()),
+    ]);
+    setReports({ weekly, peakDays, hourly, menuInventory });
+    setReportsLoaded(true);
+    setReportsLoading(false);
+  };
+
+  useEffect(() => {
+    if (view === 'reports' && !reportsLoaded) fetchReports();
+  }, [view]);
 
   // Add dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -135,8 +163,24 @@ export default function ManagerPage() {
 
       {/* Header */}
       <header className="border-b bg-white px-6 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Inventory</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Manager</h1>
+          <div className="flex gap-1">
+            {(['inventory', 'reports'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-4 py-1.5 rounded-full text-sm border transition-colors capitalize ${
+                  view === v ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+        {view === 'inventory' && (
+          <div className="flex gap-2">
           <button onClick={fetchAll} className="px-4 py-2 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50">
             Refresh
           </button>
@@ -150,108 +194,158 @@ export default function ManagerPage() {
             Add Misc
           </button>
         </div>
+      )}
       </header>
+      {view === 'inventory' && (
+        <div className="p-6 space-y-8">
+          {/* Ingredients */}
+          <section>
+            <h2 className="text-lg font-bold mb-3">Ingredients</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {ingredients.map(ing => {
+                const isLow = ing.totalquantity < 100;
+                return (
+                  <div
+                    key={ing.ingredientid}
+                    onClick={() => openEdit('ingredient', ing.ingredientid, ing.name, ing.totalquantity)}
+                    className={`rounded-lg border-2 border-amber-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
+                  >
+                    {isLow && (
+                      <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                        LOW STOCK
+                      </span>
+                    )}
+                    <span className="font-bold text-sm">{ing.name}</span>
+                    <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {ing.totalquantity}</span>
+                    <span className="text-gray-600 text-xs">Cost: ${Number(ing.cost).toFixed(2)}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'ingredient', id: ing.ingredientid, name: ing.name }); }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
+                      title="Delete"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
-      <div className="p-6 space-y-8">
-        {/* Ingredients */}
-        <section>
-          <h2 className="text-lg font-bold mb-3">Ingredients</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {ingredients.map(ing => {
-              const isLow = ing.totalquantity < 100;
-              return (
-              <div
-                key={ing.ingredientid}
-                onClick={() => openEdit('ingredient', ing.ingredientid, ing.name, ing.totalquantity)}
-                className={`rounded-lg border-2 border-amber-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
-              >
-                {isLow && (
-                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                    LOW STOCK
-                  </span>
-                )}
-                <span className="font-bold text-sm">{ing.name}</span>
-                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {ing.totalquantity}</span>
-                <span className="text-gray-600 text-xs">Cost: ${Number(ing.cost).toFixed(2)}</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'ingredient', id: ing.ingredientid, name: ing.name }); }}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
-                  title="Delete"
-                >
-                  &times;
-                </button>
-              </div>
-              );
-            })}
-          </div>
-        </section>
+          {/* Toppings */}
+          <section>
+            <h2 className="text-lg font-bold mb-3">Toppings</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {visibleToppings.map(top => {
+                const isLow = top.totalquantity < 100;
+                return (
+                  <div
+                    key={top.toppingid}
+                    onClick={() => openEdit('topping', top.toppingid, top.name, top.totalquantity)}
+                    className={`rounded-lg border-2 border-blue-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
+                  >
+                    {isLow && (
+                      <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                        LOW STOCK
+                      </span>
+                    )}
+                    <span className="font-bold text-sm">{top.name}</span>
+                    <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {top.totalquantity}</span>
+                    <span className="text-gray-600 text-xs">Price: ${Number(top.price).toFixed(2)}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'topping', id: top.toppingid, name: top.name }); }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
+                      title="Delete"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
-        {/* Toppings */}
-        <section>
-          <h2 className="text-lg font-bold mb-3">Toppings</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {visibleToppings.map(top => {
-              const isLow = top.totalquantity < 100;
-              return (
-              <div
-                key={top.toppingid}
-                onClick={() => openEdit('topping', top.toppingid, top.name, top.totalquantity)}
-                className={`rounded-lg border-2 border-blue-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
-              >
-                {isLow && (
-                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                    LOW STOCK
-                  </span>
-                )}
-                <span className="font-bold text-sm">{top.name}</span>
-                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {top.totalquantity}</span>
-                <span className="text-gray-600 text-xs">Price: ${Number(top.price).toFixed(2)}</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'topping', id: top.toppingid, name: top.name }); }}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
-                  title="Delete"
-                >
-                  &times;
-                </button>
-              </div>
-              );
-            })}
-          </div>
-        </section>
+          {/* Misc */}
+          <section>
+            <h2 className="text-lg font-bold mb-3">Misc</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {miscItems.map(m => {
+                const isLow = m.totalquantity < 100;
+                return (
+                  <div
+                    key={m.anythingid}
+                    onClick={() => openEdit('misc', m.anythingid, m.name, m.totalquantity)}
+                    className={`rounded-lg border-2 border-emerald-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
+                  >
+                    {isLow && (
+                      <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                        LOW STOCK
+                      </span>
+                    )}
+                    <span className="font-bold text-sm">{m.name}</span>
+                    <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {m.totalquantity}</span>
+                    <span className="text-gray-600 text-xs">Price: ${Number(m.price).toFixed(2)}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'misc', id: m.anythingid, name: m.name }); }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
+                      title="Delete"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      )}
 
-        {/* Misc */}
-        <section>
-          <h2 className="text-lg font-bold mb-3">Misc</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {miscItems.map(m => {
-              const isLow = m.totalquantity < 100;
-              return (
-              <div
-                key={m.anythingid}
-                onClick={() => openEdit('misc', m.anythingid, m.name, m.totalquantity)}
-                className={`rounded-lg border-2 border-emerald-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
-              >
-                {isLow && (
-                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                    LOW STOCK
-                  </span>
-                )}
-                <span className="font-bold text-sm">{m.name}</span>
-                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {m.totalquantity}</span>
-                <span className="text-gray-600 text-xs">Price: ${Number(m.price).toFixed(2)}</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'misc', id: m.anythingid, name: m.name }); }}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
-                  title="Delete"
-                >
-                  &times;
-                </button>
-              </div>
-              );
-            })}
+      {view === 'reports' && (
+        <div className="p-6 space-y-8">
+          <div className="flex justify-end">
+            <button
+              onClick={fetchReports}
+              disabled={reportsLoading}
+              className="px-4 py-2 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              {reportsLoading ? 'Loading...' : 'Refresh'}
+            </button>
           </div>
-        </section>
-      </div>
+          <ReportTable
+            title="Weekly Sales History"
+            rows={reports.weekly}
+            columns={[
+              { key: 'week', label: 'Week' },
+              { key: 'orders_in_week', label: 'Orders' },
+            ]}
+          />
+          <ReportTable
+            title="Peak Sales Days"
+            rows={reports.peakDays}
+            columns={[
+              { key: 'date', label: 'Date' },
+              { key: 'daily_sales', label: 'Sales', format: 'currency' },
+            ]}
+          />
+          <ReportTable
+            title="Hourly Sales"
+            rows={reports.hourly}
+            columns={[
+              { key: 'hour', label: 'Hour', format: 'hour' },
+              { key: 'order_count', label: 'Orders' },
+              { key: 'total_sales', label: 'Sales', format: 'currency' },
+            ]}
+          />
+          <ReportTable
+            title="Menu Item Ingredient Count"
+            rows={reports.menuInventory}
+            columns={[
+              { key: 'drink_name', label: 'Drink' },
+              { key: 'ingredient_count', label: 'Ingredients' },
+            ]}
+          />
+        </div>
+      )}
+
 
       {/* Add Dialog */}
       {showAddDialog && (
@@ -370,5 +464,59 @@ export default function ManagerPage() {
         </div>
       )}
     </main>
+  );
+}
+
+
+function ReportTable({
+  title,
+  rows,
+  columns,
+}: {
+  title: string;
+  rows: ReportRow[];
+  columns: { key: string; label: string; format?: 'currency' | 'hour' }[];
+}) {
+  const fmt = (val: string | number, format?: 'currency' | 'hour') => {
+    if (format === 'currency') return `$${Number(val).toFixed(2)}`;
+    if (format === 'hour') {
+      const h = Number(val);
+      return h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`;
+    }
+    return String(val);
+  };
+
+  return (
+    <section>
+      <h2 className="text-lg font-bold mb-3">{title}</h2>
+      {rows.length === 0 ? (
+        <p className="text-gray-400 text-sm">No data.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                {columns.map(col => (
+                  <th key={col.key} className="px-4 py-2.5 text-left font-medium text-gray-600">
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {rows.map((row, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  {columns.map(col => (
+                    <td key={col.key} className="px-4 py-2.5 text-gray-800">
+                      {fmt(row[col.key], col.format)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }

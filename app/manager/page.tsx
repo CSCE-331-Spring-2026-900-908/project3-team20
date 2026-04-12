@@ -157,14 +157,21 @@ export default function ManagerPage() {
         <section>
           <h2 className="text-lg font-bold mb-3">Ingredients</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {ingredients.map(ing => (
+            {ingredients.map(ing => {
+              const isLow = ing.totalquantity < 100;
+              return (
               <div
                 key={ing.ingredientid}
                 onClick={() => openEdit('ingredient', ing.ingredientid, ing.name, ing.totalquantity)}
-                className="rounded-lg border-2 border-amber-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
+                className={`rounded-lg border-2 border-amber-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
               >
+                {isLow && (
+                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                    LOW STOCK
+                  </span>
+                )}
                 <span className="font-bold text-sm">{ing.name}</span>
-                <span className="text-gray-600 text-xs">Quantity: {ing.totalquantity}</span>
+                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {ing.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Cost: ${Number(ing.cost).toFixed(2)}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'ingredient', id: ing.ingredientid, name: ing.name }); }}
@@ -174,7 +181,8 @@ export default function ManagerPage() {
                   &times;
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -182,14 +190,21 @@ export default function ManagerPage() {
         <section>
           <h2 className="text-lg font-bold mb-3">Toppings</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {visibleToppings.map(top => (
+            {visibleToppings.map(top => {
+              const isLow = top.totalquantity < 100;
+              return (
               <div
                 key={top.toppingid}
                 onClick={() => openEdit('topping', top.toppingid, top.name, top.totalquantity)}
-                className="rounded-lg border-2 border-blue-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
+                className={`rounded-lg border-2 border-blue-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
               >
+                {isLow && (
+                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                    LOW STOCK
+                  </span>
+                )}
                 <span className="font-bold text-sm">{top.name}</span>
-                <span className="text-gray-600 text-xs">Quantity: {top.totalquantity}</span>
+                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {top.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Price: ${Number(top.price).toFixed(2)}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'topping', id: top.toppingid, name: top.name }); }}
@@ -199,7 +214,8 @@ export default function ManagerPage() {
                   &times;
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -207,14 +223,21 @@ export default function ManagerPage() {
         <section>
           <h2 className="text-lg font-bold mb-3">Misc</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {miscItems.map(m => (
+            {miscItems.map(m => {
+              const isLow = m.totalquantity < 100;
+              return (
               <div
                 key={m.anythingid}
                 onClick={() => openEdit('misc', m.anythingid, m.name, m.totalquantity)}
-                className="rounded-lg border-2 border-emerald-400 bg-white p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition"
+                className={`rounded-lg border-2 border-emerald-400 p-4 flex flex-col gap-1 group relative cursor-pointer hover:shadow-md transition ${isLow ? 'bg-red-50' : 'bg-white'}`}
               >
+                {isLow && (
+                  <span className="absolute top-1 right-1 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                    LOW STOCK
+                  </span>
+                )}
                 <span className="font-bold text-sm">{m.name}</span>
-                <span className="text-gray-600 text-xs">Quantity: {m.totalquantity}</span>
+                <span className={`text-xs ${isLow ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>Quantity: {m.totalquantity}</span>
                 <span className="text-gray-600 text-xs">Price: ${Number(m.price).toFixed(2)}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'misc', id: m.anythingid, name: m.name }); }}
@@ -224,7 +247,8 @@ export default function ManagerPage() {
                   &times;
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

@@ -8,7 +8,7 @@ export async function GET() {
       FROM drinks d
       JOIN recipes r ON d.drinkid = r.drinkid
       JOIN ingredients i ON r.ingredientid = i.ingredientid
-      WHERE LOWER(i.name) <> 'none'
+      WHERE LOWER(i.name) <> 'none' AND d.name IS NOT NULL
       GROUP BY d.name
       ORDER BY ingredient_count DESC
     `);

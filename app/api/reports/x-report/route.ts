@@ -4,7 +4,15 @@ import pool from '@/lib/db';
 export async function GET() {
   try {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const generatedAt = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Chicago',
+    });
+
+    const today = now.toLocaleDateString('en-CA', {
+        timeZone: 'America/Chicago',
+    });
 
     const [summaryRes, hourlyRes, expensesRes] = await Promise.all([
       pool.query(
@@ -34,7 +42,7 @@ export async function GET() {
 
     return NextResponse.json({
       date: today,
-      generatedAt: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      generatedAt,
       totalOrders: Number(summaryRes.rows[0].total_orders),
       totalRevenue,
       totalExpenses,

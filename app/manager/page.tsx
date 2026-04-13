@@ -76,6 +76,7 @@ function ReportTable({
 }
 
 type XReportData = {
+  alreadyRun?: boolean;
   date: string;
   generatedAt: string;
   totalOrders: number;
@@ -83,6 +84,19 @@ type XReportData = {
   totalExpenses: number;
   totalProfit: number;
   hourlyBreakdown: { hour: number; order_count: number; total_sales: number }[];
+};
+
+type ZReportData = {
+  alreadyRun: boolean;
+  date: string;
+  generatedAt?: string;
+  totalOrders?: number;
+  totalRevenue?: number;
+  totalExpenses?: number;
+  totalProfit?: number;
+  tax?: number;
+  totalWithTax?: number;
+  employees?: { name: string; order_count: number }[];
 };
 
 
@@ -95,6 +109,10 @@ export default function ManagerPage() {
   const [showCustomReport, setShowCustomReport] = useState(false);
   const [xReportData, setXReportData] = useState<XReportData | null>(null);
   const [xReportLoading, setXReportLoading] = useState(false);
+
+  const [showZReport, setShowZReport] = useState(false);
+  const [zReportData, setZReportData] = useState<ZReportData | null>(null);
+  const [zReportLoading, setZReportLoading] = useState(false);
 
   const [reports, setReports] = useState<{
     weekly: ReportRow[];
@@ -133,12 +151,21 @@ export default function ManagerPage() {
   };
 
   const fetchXReport = async () => {
-  setXReportLoading(true);
-  const res = await fetch('/api/reports/x-report');
-  const data = await res.json();
-  setXReportData(data);
-  setXReportLoading(false);
-  setShowXReport(true);
+    setXReportLoading(true);
+    const res = await fetch('/api/reports/x-report');
+    const data = await res.json();
+    setXReportData(data);
+    setXReportLoading(false);
+    setShowXReport(true);
+  };
+
+  const fetchZReport = async () => {
+    setZReportLoading(true);
+    const res = await fetch('/api/reports/z-report');
+    const data = await res.json();
+    setZReportData(data);
+    setZReportLoading(false);
+    setShowZReport(true);
   };
 
   const fetchCustomReport = async () => {
@@ -321,8 +348,14 @@ export default function ManagerPage() {
               X Report
             </button>
             <button
+              onClick={fetchZReport}
+              className="px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600"
+            >
+              Z Report
+            </button>
+            <button
               onClick={() => setShowCustomReport(true)}
-              className="px-4 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600"
+              className="px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600"
             >
               Custom Report
             </button>
@@ -614,8 +647,14 @@ export default function ManagerPage() {
           </div>
 
           {xReportLoading && <p className="text-sm text-gray-400 text-center py-8">Loading...</p>}
+          
+          {!xReportLoading && xReportData?.alreadyRun && (
+            <p className="text-sm text-gray-500 text-center py-6">
+              Z report has already been run for today. No X report data available.
+            </p>
+          )}
 
-          {xReportData && !xReportLoading && (
+          {!xReportLoading && xReportData && !xReportData.alreadyRun && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -645,17 +684,29 @@ export default function ManagerPage() {
                     <tbody className="divide-y divide-gray-100 bg-white">
                       {xReportData.hourlyBreakdown.map((row, i) => {
                         const h = row.hour;
-                        const label = h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`;
+                        const label =
+                          h === 0 ? '12 AM' :
+                          h < 12 ? `${h} AM` :
+                          h === 12 ? '12 PM' :
+                          `${h - 12} PM`;
+
                         return (
                           <tr key={i} className="hover:bg-gray-50">
                             <td className="px-4 py-2">{label}</td>
                             <td className="px-4 py-2">{row.order_count}</td>
-                            <td className="px-4 py-2">${Number(row.total_sales).toFixed(2)}</td>
+                            <td className="px-4 py-2">
+                              ${Number(row.total_sales).toFixed(2)}
+                            </td>
                           </tr>
                         );
                       })}
+
                       {xReportData.hourlyBreakdown.length === 0 && (
-                        <tr><td colSpan={3} className="px-4 py-4 text-center text-gray-400 text-sm">No orders today.</td></tr>
+                        <tr>
+                          <td colSpan={3} className="px-4 py-4 text-center text-gray-400 text-sm">
+                            No orders today.
+                          </td>
+                        </tr>
                       )}
                     </tbody>
                   </table>
@@ -663,7 +714,6 @@ export default function ManagerPage() {
               </div>
             </div>
           )}
-
           <div className="flex justify-end mt-5">
             <button onClick={() => setShowXReport(false)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
               Close
@@ -759,6 +809,88 @@ export default function ManagerPage() {
 
           <div className="flex justify-end mt-5">
             <button onClick={() => { setShowCustomReport(false); setCustomReportData(null); }} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {showZReport && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowZReport(false)}>
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-lg font-bold">Z Report</h3>
+              {zReportData && !zReportData.alreadyRun && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {zReportData.date && new Date(zReportData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — generated at {zReportData.generatedAt}
+                </p>
+              )}
+            </div>
+            <button onClick={() => setShowZReport(false)} className="text-gray-400 hover:text-black text-xl leading-none">&times;</button>
+          </div>
+
+          {zReportLoading && <p className="text-sm text-gray-400 text-center py-8">Loading...</p>}
+
+          {zReportData && !zReportLoading && (
+            <>
+              {zReportData.alreadyRun ? (
+                <p className="text-sm text-gray-500 text-center py-6">
+                  Z report has already been run for today. Come back tomorrow.
+                </p>
+              ) : (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: 'Total Orders', value: String(zReportData.totalOrders) },
+                      { label: 'Total Revenue', value: `$${Number(zReportData.totalRevenue).toFixed(2)}` },
+                      { label: 'Tax (8.25%)', value: `$${Number(zReportData.tax).toFixed(2)}` },
+                      { label: 'Revenue + Tax', value: `$${Number(zReportData.totalWithTax).toFixed(2)}` },
+                      { label: 'Total Expenses', value: `$${Number(zReportData.totalExpenses).toFixed(2)}` },
+                      { label: 'Total Profit', value: `$${Number(zReportData.totalProfit).toFixed(2)}` },
+                    ].map(stat => (
+                      <div key={stat.label} className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500">{stat.label}</p>
+                        <p className="text-lg font-bold mt-0.5">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Employees</h4>
+                    <div className="overflow-x-auto rounded-lg border border-gray-200">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-2 text-left font-medium text-gray-600">Employee</th>
+                            <th className="px-4 py-2 text-left font-medium text-gray-600">Orders Processed</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 bg-white">
+                          {zReportData.employees?.map((emp, i) => (
+                            <tr key={i} className="hover:bg-gray-50">
+                              <td className="px-4 py-2">{emp.name}</td>
+                              <td className="px-4 py-2">{emp.order_count}</td>
+                            </tr>
+                          ))}
+                          {zReportData.employees?.length === 0 && (
+                            <tr><td colSpan={2} className="px-4 py-4 text-center text-gray-400 text-sm">No orders today.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-400 text-center pt-2 border-t">
+                    This Z report has been recorded. Totals have been reset for the next business day.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="flex justify-end mt-5">
+            <button onClick={() => setShowZReport(false)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
               Close
             </button>
           </div>

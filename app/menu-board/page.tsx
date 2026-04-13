@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
@@ -129,36 +128,21 @@ export default function MenuBoardPage() {
                           key={drink.drinkid}
                           className={`rounded-xl border flex flex-col overflow-hidden ${cfg.cardBg} ${cfg.border}`}
                         >
-                          {/*
-                            ── DRINK IMAGE ───────────────────────────────────────────────
-                            Place the image for this drink at:
-                              /public/images/drinks/<slug>.png
-                            where <slug> = drink name lowercased, spaces → hyphens.
-
-                            Example: "Taro Milk Tea" → /public/images/drinks/taro-milk-tea.png
-
-                            If the file is missing the grey placeholder below is shown instead.
-                            ─────────────────────────────────────────────────────────────
-                          */}
-                          <div className="relative w-full aspect-[4/3] shrink-0">
+                          {/* Drink image — fixed height so the name is never pushed out */}
+                          <div className="w-full h-20 shrink-0 overflow-hidden">
                             {!imgErrors.has(drink.drinkid) ? (
-                              <Image
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
                                 src={getDrinkImagePath(drink.name)}
                                 alt={drink.name}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 20vw"
+                                className="w-full h-full object-cover"
                                 onError={() =>
                                   setImgErrors(prev => new Set(prev).add(drink.drinkid))
                                 }
                               />
                             ) : (
-                              /* Placeholder shown when image file does not exist yet */
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                <span className="text-[10px] text-white/30 text-center px-1 leading-tight">
-                                  {getDrinkImagePath(drink.name)}
-                                </span>
-                              </div>
+                              /* Neutral placeholder when image file does not exist */
+                              <div className="w-full h-full bg-black/20" />
                             )}
                           </div>
 

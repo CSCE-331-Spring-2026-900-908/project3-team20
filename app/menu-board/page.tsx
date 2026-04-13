@@ -129,18 +129,8 @@ export default function MenuBoardPage() {
                           key={drink.drinkid}
                           className={`rounded-xl border flex flex-col overflow-hidden ${cfg.cardBg} ${cfg.border}`}
                         >
-                          {/*
-                            ── DRINK IMAGE ───────────────────────────────────────────────
-                            Place the image for this drink at:
-                              /public/images/drinks/<slug>.png
-                            where <slug> = drink name lowercased, spaces → hyphens.
-
-                            Example: "Taro Milk Tea" → /public/images/drinks/taro-milk-tea.png
-
-                            If the file is missing the grey placeholder below is shown instead.
-                            ─────────────────────────────────────────────────────────────
-                          */}
-                          <div className="relative w-full aspect-[4/3] shrink-0">
+                          {/* Drink image — fixed height so the name is never pushed out */}
+                          <div className="relative w-full h-20 shrink-0">
                             {!imgErrors.has(drink.drinkid) ? (
                               <Image
                                 src={getDrinkImagePath(drink.name)}
@@ -153,12 +143,8 @@ export default function MenuBoardPage() {
                                 }
                               />
                             ) : (
-                              /* Placeholder shown when image file does not exist yet */
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                <span className="text-[10px] text-white/30 text-center px-1 leading-tight">
-                                  {getDrinkImagePath(drink.name)}
-                                </span>
-                              </div>
+                              /* Neutral placeholder when image file does not exist */
+                              <div className="absolute inset-0 bg-black/20" />
                             )}
                           </div>
 

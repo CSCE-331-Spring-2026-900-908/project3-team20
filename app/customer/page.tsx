@@ -126,14 +126,21 @@ export default function CustomerPage() {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredDrinks.map(drink => (
-              <button
+              <div
                 key={drink.drinkid}
-                onClick={() => setCustomizing(drink)}
-                className={`border rounded-xl p-4 text-left aspect-square flex flex-col justify-between ${categoryCardColors[drink.category || 'Other'] || categoryCardColors['Other']}`}
+                className={`border rounded-xl p-4 text-left aspect-square flex flex-col justify-between relative ${categoryCardColors[drink.category || 'Other'] || categoryCardColors['Other']}`}
               >
                 <span className="font-medium">{drink.name}</span>
-                <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
-              </button>
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
+                  <button
+                    onClick={() => setCustomizing(drink)}
+                    className="w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
           {filteredDrinks.length === 0 && (

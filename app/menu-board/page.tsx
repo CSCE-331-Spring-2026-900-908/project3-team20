@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
@@ -130,21 +129,20 @@ export default function MenuBoardPage() {
                           className={`rounded-xl border flex flex-col overflow-hidden ${cfg.cardBg} ${cfg.border}`}
                         >
                           {/* Drink image — fixed height so the name is never pushed out */}
-                          <div className="relative w-full h-20 shrink-0">
+                          <div className="w-full h-20 shrink-0 overflow-hidden">
                             {!imgErrors.has(drink.drinkid) ? (
-                              <Image
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
                                 src={getDrinkImagePath(drink.name)}
                                 alt={drink.name}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 20vw"
+                                className="w-full h-full object-cover"
                                 onError={() =>
                                   setImgErrors(prev => new Set(prev).add(drink.drinkid))
                                 }
                               />
                             ) : (
                               /* Neutral placeholder when image file does not exist */
-                              <div className="absolute inset-0 bg-black/20" />
+                              <div className="w-full h-full bg-black/20" />
                             )}
                           </div>
 

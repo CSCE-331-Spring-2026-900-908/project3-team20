@@ -105,6 +105,20 @@ export default function ManagerPage() {
   const [reportsLoaded, setReportsLoaded] = useState(false);
   const [reportsLoading, setReportsLoading] = useState(false);
 
+  const [customReportData, setCustomReportData] = useState<{
+    startDate: string;
+    endDate: string;
+    totalOrders: number;
+    totalRevenue: number;
+    totalExpenses: number;
+    totalProfit: number;
+    dailyBreakdown: { date: string; order_count: number; total_sales: number }[];
+  } | null>(null);
+  const [customReportLoading, setCustomReportLoading] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [customReportError, setCustomReportError] = useState('');
+
   const fetchReports = async () => {
     setReportsLoading(true);
     const [weekly, peakDays, hourly, menuInventory] = await Promise.all([
@@ -117,7 +131,7 @@ export default function ManagerPage() {
     setReportsLoaded(true);
     setReportsLoading(false);
   };
-  
+
   const fetchXReport = async () => {
   setXReportLoading(true);
   const res = await fetch('/api/reports/x-report');
@@ -125,6 +139,17 @@ export default function ManagerPage() {
   setXReportData(data);
   setXReportLoading(false);
   setShowXReport(true);
+  };
+
+  const fetchCustomReport = async () => {
+    if (!customStartDate || !customEndDate) { setCustomReportError('Please select both dates.'); return; }
+    if (customStartDate > customEndDate) { setCustomReportError('Start date must be before end date.'); return; }
+    setCustomReportError('');
+    setCustomReportLoading(true);
+    const res = await fetch(`/api/reports/custom-report?start=${customStartDate}&end=${customEndDate}`);
+    const data = await res.json();
+    setCustomReportData(data);
+    setCustomReportLoading(false);
   };
 
   useEffect(() => {
@@ -641,6 +666,99 @@ export default function ManagerPage() {
 
           <div className="flex justify-end mt-5">
             <button onClick={() => setShowXReport(false)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {showCustomReport && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowCustomReport(false)}>
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-bold">Custom Report</h3>
+            <button onClick={() => { setShowCustomReport(false); setCustomReportData(null); }} className="text-gray-400 hover:text-black text-xl leading-none">&times;</button>
+          </div>
+
+          <div className="flex gap-3 mb-3">
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={e => setCustomStartDate(e.target.value)}
+                className="w-full border rounded px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 mb-1">End Date</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={e => setCustomEndDate(e.target.value)}
+                className="w-full border rounded px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={fetchCustomReport}
+                disabled={customReportLoading}
+                className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {customReportLoading ? 'Loading...' : 'Generate'}
+              </button>
+            </div>
+          </div>
+
+          {customReportError && <p className="text-red-500 text-sm mb-3">{customReportError}</p>}
+
+          {customReportData && !customReportLoading && (
+            <div className="space-y-5 mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Total Orders', value: String(customReportData.totalOrders) },
+                  { label: 'Total Revenue', value: `$${Number(customReportData.totalRevenue).toFixed(2)}` },
+                  { label: 'Total Expenses', value: `$${Number(customReportData.totalExpenses).toFixed(2)}` },
+                  { label: 'Total Profit', value: `$${Number(customReportData.totalProfit).toFixed(2)}` },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-500">{stat.label}</p>
+                    <p className="text-lg font-bold mt-0.5">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2">Sales by Day</h4>
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">Date</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">Orders</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {customReportData.dailyBreakdown.map((row, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-2">{new Date(row.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                          <td className="px-4 py-2">{row.order_count}</td>
+                          <td className="px-4 py-2">${Number(row.total_sales).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      {customReportData.dailyBreakdown.length === 0 && (
+                        <tr><td colSpan={3} className="px-4 py-4 text-center text-gray-400 text-sm">No orders in this period.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end mt-5">
+            <button onClick={() => { setShowCustomReport(false); setCustomReportData(null); }} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
               Close
             </button>
           </div>

@@ -61,7 +61,7 @@ export default function RootLayout({
           {themeInitScript}
         </Script>
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ButtonSizeProvider>
           <TranslationProvider>
             <header className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-b border-gray-200">
@@ -69,7 +69,6 @@ export default function RootLayout({
                 id="theme-toggle"
                 type="button"
                 aria-label="Toggle color mode"
-                aria-pressed="false"
                 className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
               >
                 Dark Mode

@@ -150,14 +150,21 @@ export default function CashierPage() {
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {filteredDrinks.map(drink => (
-                            <button
+                            <div
                                 key={drink.drinkid}
-                                onClick={() => setCustomizing(drink)}
-                                className={`rounded p-3 text-left flex flex-col justify-between border ${getCardColor(drink.category || 'other')}`}
+                                className={`rounded p-3 text-left flex flex-col justify-between relative border ${getCardColor(drink.category || 'other')}`}
                             >
                                 <span className="font-medium text-sm">{drink.name}</span>
-                                <span className="text-gray-500 text-xs mt-1">${Number(drink.cost).toFixed(2)}</span>
-                            </button>
+                                <div className="flex justify-between items-end mt-1">
+                                    <span className="text-gray-500 text-xs">${Number(drink.cost).toFixed(2)}</span>
+                                    <button
+                                        onClick={() => setCustomizing(drink)}
+                                        className="drink-add-btn w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
                         ))}
                     </div>
                     {filteredDrinks.length === 0 && (

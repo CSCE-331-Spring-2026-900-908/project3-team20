@@ -53,3 +53,12 @@ export function lineTotal(item: CartItem): number {
   );
   return (item.drink.cost + toppingCost) * item.quantity;
 }
+
+// Happy hour: discount applies to the drink price only, not toppings
+export function lineTotalDiscounted(item: CartItem, discountMultiplier: number): number {
+  const toppingCost = item.toppings.reduce(
+    (sum, t) => sum + t.price * t.amount,
+    0
+  );
+  return (item.drink.cost * discountMultiplier + toppingCost) * item.quantity;
+}

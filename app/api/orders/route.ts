@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { CartItem, DrinkCustomization, lineTotal } from '@/types';
+import { CartItem, DrinkCustomization } from '@/types';
+import { isHappyHour, applyHappyHourDiscount } from '@/lib/happyHour';
 
 const KIOSK_EMPLOYEE_ID = 1;
 const SWEETNESS_TO_SUGAR_USAGE: Record<DrinkCustomization['sweetness'], number> = {
@@ -43,10 +44,18 @@ export async function POST(request: Request) {
     const resolvedEmployeeId = Number.isFinite(Number(employeeId))
       ? Number(employeeId)
       : KIOSK_EMPLOYEE_ID;
-    const total = items.reduce((sum, item) => sum + lineTotal(item), 0);
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const hour = now.getHours();
+    const happyHourActive = isHappyHour(hour);
+
+    const total = items.reduce((sum, item) => {
+      const drinkCost = happyHourActive
+        ? applyHappyHourDiscount(Number(item.drink.cost))
+        : Number(item.drink.cost);
+      const toppingCost = item.toppings.reduce((s, t) => s + t.price * t.amount, 0);
+      return sum + (drinkCost + toppingCost) * item.quantity;
+    }, 0);
 
     await client.query('BEGIN');
 
@@ -75,9 +84,12 @@ export async function POST(request: Request) {
 
     // 2. Insert order items and toppings
     for (const item of items) {
+      const singleCost = happyHourActive
+        ? applyHappyHourDiscount(Number(item.drink.cost))
+        : Number(item.drink.cost);
       const itemRes = await client.query(
         'INSERT INTO orderitems (orderid, drinkid, amount, singlecost) VALUES ($1, $2, $3, $4) RETURNING orderitemsid',
-        [orderId, item.drink.drinkid, item.quantity, Number(item.drink.cost).toFixed(2)]
+        [orderId, item.drink.drinkid, item.quantity, singleCost.toFixed(2)]
       );
       const orderItemsId = itemRes.rows[0].orderitemsid;
 

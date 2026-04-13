@@ -159,7 +159,7 @@ export default function CashierPage() {
                                     <span className="text-gray-500 text-xs">${Number(drink.cost).toFixed(2)}</span>
                                     <button
                                         onClick={() => setCustomizing(drink)}
-                                        className="w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
+                                        className="drink-add-btn w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
                                     >
                                         +
                                     </button>

@@ -42,6 +42,19 @@ html.btn-size-xl {
   font-size: 21px;
 }
 
+/* Drink card + button scales with accessibility size */
+html.btn-size-large .drink-add-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+}
+
+html.btn-size-xl .drink-add-btn {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+
 html.dark-mode {
   color-scheme: dark;
   --background: #111827;

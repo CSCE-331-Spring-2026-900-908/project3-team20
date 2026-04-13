@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal } from '@/types';
+import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotalDiscounted } from '@/types';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
   hot: 'No',
@@ -16,6 +16,12 @@ const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
 type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
 const HIDDEN_CUSTOMIZATION_TOPPINGS = new Set(['hot', 'sugar', 'ice']);
 
+interface HappyHourInfo {
+  active: boolean;
+  discountPct: number;
+  label: string;
+}
+
 export default function CustomerPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
@@ -24,6 +30,7 @@ export default function CustomerPage() {
   const [customizing, setCustomizing] = useState<Drink | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
+  const [happyHour, setHappyHour] = useState<HappyHourInfo>({ active: false, discountPct: 20, label: '6PM–8PM' });
 
   useEffect(() => {
     fetch('/api/drinks').then(r => r.json()).then(data => {
@@ -34,7 +41,13 @@ export default function CustomerPage() {
       if (Array.isArray(data)) setToppings(data);
       else console.error('Toppings API error:', data);
     });
+    fetch('/api/happy-hour').then(r => r.json()).then(data => {
+      setHappyHour({ active: data.active, discountPct: data.discountPct, label: data.label });
+    });
   }, []);
+
+  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
+  const discountedCost = (cost: number) => cost * discountMultiplier;
 
   const categories = ['All', ...Array.from(new Set(drinks.map(d => d.category || 'Other')))];
 
@@ -48,7 +61,7 @@ export default function CustomerPage() {
     ? drinks
     : drinks.filter(d => (d.category || 'Other') === selectedCategory);
 
-  const cartTotal = cart.reduce((sum, item) => sum + lineTotal(item), 0);
+  const cartTotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMultiplier), 0);
 
   const addToCart = useCallback((
     drink: Drink,
@@ -105,6 +118,14 @@ export default function CustomerPage() {
           <h1 className="text-2xl font-bold">Order Here</h1>
         </header>
 
+        {/* Happy Hour Banner */}
+        {happyHour.active && (
+          <div className="bg-amber-400 text-amber-900 px-6 py-2 flex items-center gap-2 font-semibold text-sm">
+            <span>🧋</span>
+            <span>Happy Hour {happyHour.label} — {happyHour.discountPct}% off all drinks!</span>
+          </div>
+        )}
+
         {/* Category tabs */}
         <div className="flex gap-2 px-6 py-3 border-b overflow-x-auto">
           {categories.map(cat => (
@@ -132,7 +153,16 @@ export default function CustomerPage() {
               >
                 <span className="font-medium">{drink.name}</span>
                 <div className="flex justify-between items-end">
-                  <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
+                  <div className="flex flex-col">
+                    {happyHour.active ? (
+                      <>
+                        <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
+                        <span className="text-amber-700 font-semibold">${discountedCost(Number(drink.cost)).toFixed(2)}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
+                    )}
+                  </div>
                   <button
                     onClick={() => setCustomizing(drink)}
                     className="drink-add-btn w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
@@ -181,7 +211,7 @@ export default function CustomerPage() {
                   Remove
                 </button>
               </div>
-              <p className="text-sm text-right mt-1">${lineTotal(item).toFixed(2)}</p>
+              <p className="text-sm text-right mt-1">${lineTotalDiscounted(item, discountMultiplier).toFixed(2)}</p>
             </div>
           ))}
         </div>
@@ -227,6 +257,7 @@ export default function CustomerPage() {
           toppings={toppings}
           onAdd={addToCart}
           onClose={() => setCustomizing(null)}
+          happyHour={happyHour}
         />
       )}
 
@@ -235,6 +266,7 @@ export default function CustomerPage() {
         <UpsellModal
           drinks={drinks}
           cart={cart}
+          happyHour={happyHour}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
           onConfirm={(tip) => { setShowUpsell(false); placeOrder(tip); }}
           onClose={() => setShowUpsell(false)}
@@ -250,11 +282,13 @@ function CustomizeModal({
   toppings,
   onAdd,
   onClose,
+  happyHour = { active: false, discountPct: 20, label: '6PM–8PM' },
 }: {
   drink: Drink;
   toppings: Topping[];
   onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[], customization: DrinkCustomization) => void;
   onClose: () => void;
+  happyHour?: HappyHourInfo;
 }) {
   const selectableToppings = toppings.filter(
     topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
@@ -282,18 +316,27 @@ function CustomizeModal({
     onAdd(drink, quantity, selected, { hot, sweetness, ice });
   };
 
+  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
   const toppingCost = selectableToppings.reduce(
     (sum, t) => sum + Number(t.price) * (toppingAmounts[t.toppingid] || 0),
     0
   );
-  const itemTotal = (Number(drink.cost) + toppingCost) * quantity;
+  const itemTotal = (Number(drink.cost) * discountMultiplier + toppingCost) * quantity;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b">
           <h3 className="text-lg font-bold">{drink.name}</h3>
-          <p className="text-gray-600">${Number(drink.cost).toFixed(2)}</p>
+          {happyHour.active ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
+              <span className="text-amber-700 font-semibold">${(Number(drink.cost) * discountMultiplier).toFixed(2)}</span>
+              <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">Happy Hour</span>
+            </div>
+          ) : (
+            <p className="text-gray-600">${Number(drink.cost).toFixed(2)}</p>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -435,12 +478,14 @@ function CustomizeModal({
 function UpsellModal({
   drinks,
   cart,
+  happyHour = { active: false, discountPct: 20, label: '6PM–8PM' },
   onAddDrink,
   onConfirm,
   onClose,
 }: {
   drinks: Drink[];
   cart: CartItem[];
+  happyHour?: HappyHourInfo;
   onAddDrink: (drink: Drink) => void;
   onConfirm: (tipAmount: number) => void;
   onClose: () => void;
@@ -448,8 +493,9 @@ function UpsellModal({
   const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
   const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
   const [added, setAdded] = useState<Set<number>>(new Set());
+  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
 
-  const subtotal = cart.reduce((sum, item) => sum + lineTotal(item), 0);
+  const subtotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMultiplier), 0);
   const TIP_PRESETS = [0, 15, 20, 25] as const;
   const [tipPct, setTipPct] = useState<number | null>(20);
   const [customTip, setCustomTip] = useState('');
@@ -477,7 +523,14 @@ function UpsellModal({
             <div key={drink.drinkid} className="flex items-center justify-between border rounded-lg px-3 py-2">
               <div>
                 <p className="text-sm font-medium">{drink.name}</p>
-                <p className="text-xs text-gray-500">${Number(drink.cost).toFixed(2)}</p>
+                {happyHour.active ? (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
+                    <span className="text-xs text-amber-700 font-medium">${(Number(drink.cost) * discountMultiplier).toFixed(2)}</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">${Number(drink.cost).toFixed(2)}</p>
+                )}
               </div>
               <button
                 onClick={() => handleAdd(drink)}

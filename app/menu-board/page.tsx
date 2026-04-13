@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
@@ -33,10 +34,22 @@ function getCatConfig(category: string | null) {
   return categoryConfig[key] ?? categoryConfig['other'];
 }
 
+/**
+ * Returns the image path for a drink.
+ * Place drink images at: /public/images/drinks/<drink-name-kebab-case>.png
+ * e.g. "Taro Milk Tea" → /public/images/drinks/taro-milk-tea.png
+ */
+function getDrinkImagePath(drinkName: string): string {
+  const slug = drinkName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  return `/images/drinks/${slug}.png`;
+}
+
 export default function MenuBoardPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [loading, setLoading] = useState(true);
+  // Track which drink images have failed to load so we show the placeholder instead
+  const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const fetchData = () =>
@@ -61,77 +74,137 @@ export default function MenuBoardPage() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#110800] text-white overflow-y-auto">
+    // Outer wrapper locks to viewport height — no page scroll
+    <div className="h-screen overflow-hidden bg-[#110800] text-white flex flex-col">
 
-      {/* Page header */}
-      <header className="bg-[#1e1000] border-b border-amber-900/40 px-8 py-6 text-center">
-        <p className="text-amber-500/70 text-xs tracking-[0.4em] uppercase font-semibold mb-1">
+      {/* ── Compact page header ─────────────────────────────────────── */}
+      <header className="shrink-0 bg-[#1e1000] border-b border-amber-900/40 px-6 py-3 flex items-center justify-between">
+        <p className="text-amber-500/60 text-[10px] tracking-[0.35em] uppercase font-semibold hidden sm:block">
           Fresh Made Daily
         </p>
-        <h1 className="text-4xl font-extrabold text-amber-100 tracking-tight">Our Menu</h1>
-        <p className="text-amber-700/60 text-xs mt-2 tracking-widest uppercase">
-          All drinks customizable · Ask about sizes &amp; sweetness levels
+        <h1 className="text-2xl font-extrabold text-amber-100 tracking-tight mx-auto sm:mx-0">
+          Our Menu
+        </h1>
+        <p className="text-amber-700/50 text-[10px] tracking-widest uppercase hidden sm:block">
+          Customizable · All sizes
         </p>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      {/* ── Main content area — fills remaining height ───────────────── */}
+      <main className="flex-1 overflow-hidden flex flex-col px-4 py-3 gap-3">
+
         {loading ? (
-          <p className="text-amber-500/50 text-center mt-24 text-xl tracking-wide">Loading menu…</p>
+          <p className="text-amber-500/50 text-center m-auto text-lg tracking-wide">
+            Loading menu…
+          </p>
         ) : (
           <>
-            {/* Drink categories */}
-            <div className="space-y-10">
+            {/* ── Drink categories laid out side-by-side ──────────────── */}
+            {/*
+              Each category gets an equal column.
+              The number of columns auto-adjusts based on how many categories exist.
+              Change grid-cols-* below if you add or remove categories.
+            */}
+            <div
+              className="flex-1 overflow-hidden grid gap-3"
+              style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}
+            >
               {categories.map(category => {
                 const cfg = getCatConfig(category);
                 return (
-                  <section key={category}>
+                  <section key={category} className="flex flex-col overflow-hidden">
+
                     {/* Category header */}
-                    <div className={`flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border ${cfg.headerBg}`}>
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${cfg.dot}`} />
-                      <h2 className={`text-base font-bold uppercase tracking-[0.2em] ${cfg.color}`}>
+                    <div className={`flex items-center gap-2 mb-2 px-3 py-1.5 rounded-lg border shrink-0 ${cfg.headerBg}`}>
+                      <span className={`h-2 w-2 rounded-full shrink-0 ${cfg.dot}`} />
+                      <h2 className={`text-xs font-bold uppercase tracking-[0.2em] ${cfg.color}`}>
                         {category}
                       </h2>
-                      <div className="flex-1 h-px bg-white/5" />
                     </div>
 
-                    {/* Drink cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {/* Drink cards — 2-column grid that fills the remaining column height */}
+                    <div className="flex-1 overflow-hidden grid grid-cols-2 gap-2 content-start">
                       {drinksByCategory[category].map(drink => (
                         <div
                           key={drink.drinkid}
-                          className={`rounded-2xl border px-4 py-3.5 flex flex-col gap-2 ${cfg.cardBg} ${cfg.border} transition-colors`}
+                          className={`rounded-xl border flex flex-col overflow-hidden ${cfg.cardBg} ${cfg.border}`}
                         >
-                          <span className="font-semibold text-white leading-snug">{drink.name}</span>
-                          <span className={`text-sm font-bold ${cfg.color}`}>
-                            ${Number(drink.cost).toFixed(2)}
-                          </span>
+                          {/*
+                            ── DRINK IMAGE ───────────────────────────────────────────────
+                            Place the image for this drink at:
+                              /public/images/drinks/<slug>.png
+                            where <slug> = drink name lowercased, spaces → hyphens.
+
+                            Example: "Taro Milk Tea" → /public/images/drinks/taro-milk-tea.png
+
+                            If the file is missing the grey placeholder below is shown instead.
+                            ─────────────────────────────────────────────────────────────
+                          */}
+                          <div className="relative w-full aspect-[4/3] shrink-0">
+                            {!imgErrors.has(drink.drinkid) ? (
+                              <Image
+                                src={getDrinkImagePath(drink.name)}
+                                alt={drink.name}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 50vw, 20vw"
+                                onError={() =>
+                                  setImgErrors(prev => new Set(prev).add(drink.drinkid))
+                                }
+                              />
+                            ) : (
+                              /* Placeholder shown when image file does not exist yet */
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                <span className="text-[10px] text-white/30 text-center px-1 leading-tight">
+                                  {getDrinkImagePath(drink.name)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Drink name + price */}
+                          <div className="px-2 py-1.5 flex flex-col gap-0.5">
+                            <span className="text-xs font-semibold text-white leading-snug line-clamp-2">
+                              {drink.name}
+                            </span>
+                            <span className={`text-xs font-bold ${cfg.color}`}>
+                              ${Number(drink.cost).toFixed(2)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
+
                   </section>
                 );
               })}
             </div>
 
-            {/* Toppings / Add-ons */}
+            {/* ── Toppings strip — compact single row at the bottom ────── */}
             {toppings.length > 0 && (
-              <section className="mt-14">
-                <div className="flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border bg-teal-500/10 border-teal-500/20">
-                  <span className="h-2.5 w-2.5 rounded-full bg-teal-400 shrink-0" />
-                  <h2 className="text-base font-bold uppercase tracking-[0.2em] text-teal-300">
+              <section className="shrink-0">
+                <div className="flex items-center gap-2 mb-1.5 px-3 py-1 rounded-lg border bg-teal-500/10 border-teal-500/20">
+                  <span className="h-2 w-2 rounded-full bg-teal-400 shrink-0" />
+                  <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">
                     Add-Ons &amp; Toppings
                   </h2>
-                  <div className="flex-1 h-px bg-white/5" />
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                {/* Toppings scroll horizontally if there are many */}
+                <div className="flex gap-2 overflow-x-auto pb-1">
                   {toppings.map(topping => (
                     <div
                       key={topping.toppingid}
-                      className="rounded-2xl border border-teal-600/25 bg-teal-950/25 px-3 py-3 flex flex-col gap-1"
+                      className="shrink-0 rounded-xl border border-teal-600/25 bg-teal-950/25 px-3 py-2 flex flex-col gap-0.5 min-w-[80px]"
                     >
-                      <span className="font-medium text-sm text-white leading-snug">{topping.name}</span>
-                      <span className="text-xs font-bold text-teal-300">
+                      {/*
+                        ── TOPPING IMAGE (optional) ──────────────────────────────
+                        Place at: /public/images/toppings/<slug>.png
+                        e.g. "Boba Pearls" → /public/images/toppings/boba-pearls.png
+                        ─────────────────────────────────────────────────────────
+                      */}
+                      <span className="font-medium text-xs text-white leading-snug">{topping.name}</span>
+                      <span className="text-[10px] font-bold text-teal-300">
                         +${Number(topping.price).toFixed(2)}
                       </span>
                     </div>
@@ -143,15 +216,16 @@ export default function MenuBoardPage() {
         )}
       </main>
 
-      <footer className="text-center py-8 text-amber-900/40 text-xs tracking-[0.3em] uppercase">
+      {/* ── Footer note ────────────────────────────────────────────────── */}
+      <footer className="shrink-0 text-center py-1.5 text-amber-900/40 text-[9px] tracking-[0.3em] uppercase border-t border-amber-900/20">
         Prices subject to change · Tax not included
       </footer>
 
       <Link
         href="/"
-        className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 rounded-full border border-amber-700/60 bg-[#1e1000] px-4 py-2 text-sm font-semibold text-amber-400 shadow-xl transition hover:-translate-y-0.5 hover:bg-amber-900/60 focus:outline-none focus:ring-4 focus:ring-amber-700/40"
+        className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-amber-700/60 bg-[#1e1000] px-3 py-1.5 text-xs font-semibold text-amber-400 shadow-xl transition hover:-translate-y-0.5 hover:bg-amber-900/60 focus:outline-none focus:ring-4 focus:ring-amber-700/40"
       >
-        ← Back to Home
+        ← Back
       </Link>
     </div>
   );

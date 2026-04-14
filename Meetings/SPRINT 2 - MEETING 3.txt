@@ -1,4 +1,4 @@
-SPRINT 2 - MEETING 2
+SPRINT 2 - MEETING 3
 ====================
 Prepared by: Cannon Cavazos
 Meeting Date: 4/10/2025
@@ -9,14 +9,13 @@ Wyatt Voigt, Cannon Cavazos, Omer Aslan, Ahmet Asim Aykanat, Prathinav Allena
 
 Agenda
 ------
-1. Get feedback on our current product
-2. Determine how to fix any issues found
+1. Fix issues with menu display
+2. Figure out what we want to do for above and beyond features
 
 Accomplishments
 ---------------
-- Finished dark mode
-- Can adjust sweetness and ice level on frontend
-- Added cash or credit option
+- AI Chatbot implementation
+- Checkout Upsell
 
 Tasks
 -----
@@ -35,7 +34,7 @@ Tasks
  5. Translation API — Wyatt                                      COMPLETE
     Use an API to translate the website into multiple languages.
 
- 6. AI Chatbot for Menu & Ordering Help — Cannon                 INCOMPLETE
+ 6. AI Chatbot for Menu & Ordering Help — Omer                   COMPLETE
 
  7. Reports — Cannon                                             INCOMPLETE
     Create a tab to view reports in the manager view.
@@ -55,13 +54,13 @@ Tasks
 13. Color Scheme Toggle (Dark/Light Mode) — Prathinav            COMPLETE
     Create a contrasting light mode for color-blind users.
 
-14. Manager Low Stock Alerts — Wyatt                             INCOMPLETE
+14. Manager Low Stock Alerts — Wyatt                             COMPLETE
 
-15. Add Tip Option (20%) — Cannon                                INCOMPLETE
+15. Add Tip Option (20%) — Cannon                                COMPLETE
 
 16. Happy Hour (Time-Based Pricing) — Ahmet                      INCOMPLETE
 
-17. Cash/Credit Payment Option — Prathinav                       C
+17. Cash/Credit Payment Option — Prathinav                       COMPLETE
 
 Before Next Meeting
 -------------------
@@ -69,6 +68,6 @@ Before Next Meeting
 
 Minutes
 -------
-- Discussed how to keep track of iced vs hot drinks
-- Discussed color contrast for Vishnu with Sarah
-- Discussed translate features and found a few errors to fix
+- Discussed how to lay out the menu 
+- Discussed how we were going to display pictures in the menu and customer views
+- Discussed plans to implement above and beyond features

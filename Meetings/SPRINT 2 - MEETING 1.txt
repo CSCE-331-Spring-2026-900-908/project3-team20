@@ -37,7 +37,7 @@ Tasks
  5. Translation API — Wyatt                                      COMPLETE
     Use an API to translate the website into multiple languages.
 
- 6. AI Chatbot for Menu & Ordering Help — Cannon                 INCOMPLETE
+ 6. AI Chatbot for Menu & Ordering Help — Omer                 INCOMPLETE
 
  7. Reports — Cannon                                             INCOMPLETE
     Create a tab to view reports in the manager view.

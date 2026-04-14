@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotalDiscounted } from '@/types';
+import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
+import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
   hot: 'No',
@@ -15,12 +16,7 @@ const ICE_OPTIONS: DrinkCustomization['ice'][] = ['None', 'Less', 'Normal', 'Mor
 const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
 type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
 const HIDDEN_CUSTOMIZATION_TOPPINGS = new Set(['hot', 'sugar', 'ice']);
-
-interface HappyHourInfo {
-  active: boolean;
-  discountPct: number;
-  label: string;
-}
+const DISCOUNT = 1 - HAPPY_HOUR_DISCOUNT_PCT / 100; // e.g. 0.80 for 20% off
 
 export default function CustomerPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
@@ -30,7 +26,21 @@ export default function CustomerPage() {
   const [customizing, setCustomizing] = useState<Drink | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
-  const [happyHour, setHappyHour] = useState<HappyHourInfo>({ active: false, discountPct: 20, label: '6PM–8PM' });
+  const [showUpsell, setShowUpsell] = useState(false);
+
+  // --- Happy hour: computed purely client-side, rechecked every minute ---
+  const [isHappyHour, setIsHappyHour] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      const h = new Date().getHours();
+      setIsHappyHour(h >= HAPPY_HOUR_START && h < HAPPY_HOUR_END);
+    };
+    check();
+    const interval = setInterval(check, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const discountMultiplier = isHappyHour ? DISCOUNT : 1;
 
   useEffect(() => {
     fetch('/api/drinks').then(r => r.json()).then(data => {
@@ -41,13 +51,7 @@ export default function CustomerPage() {
       if (Array.isArray(data)) setToppings(data);
       else console.error('Toppings API error:', data);
     });
-    fetch('/api/happy-hour').then(r => r.json()).then(data => {
-      setHappyHour({ active: data.active, discountPct: data.discountPct, label: data.label });
-    });
   }, []);
-
-  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
-  const discountedCost = (cost: number) => cost * discountMultiplier;
 
   const categories = ['All', ...Array.from(new Set(drinks.map(d => d.category || 'Other')))];
 
@@ -62,6 +66,8 @@ export default function CustomerPage() {
     : drinks.filter(d => (d.category || 'Other') === selectedCategory);
 
   const cartTotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMultiplier), 0);
+  const cartFullPrice = cart.reduce((sum, item) => sum + lineTotal(item), 0);
+  const cartSavings = cartFullPrice - cartTotal;
 
   const addToCart = useCallback((
     drink: Drink,
@@ -76,8 +82,6 @@ export default function CustomerPage() {
   const removeFromCart = useCallback((index: number) => {
     setCart(prev => prev.filter((_, i) => i !== index));
   }, []);
-
-  const [showUpsell, setShowUpsell] = useState(false);
 
   const placeOrder = async (tip: number) => {
     if (cart.length === 0) return;
@@ -103,7 +107,7 @@ export default function CustomerPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#f5efe6] text-black">
+    <div className={`flex h-screen text-black transition-colors duration-500 ${isHappyHour ? 'bg-amber-50' : 'bg-[#f5efe6]'}`}>
       <Link
         href="/"
         className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"
@@ -113,29 +117,44 @@ export default function CustomerPage() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="border-b px-6 py-4">
-          <h1 className="text-2xl font-bold">Order Here</h1>
+
+        {/* Header — always shows the happy hour schedule */}
+        <header className={`border-b px-6 py-4 flex items-center justify-between transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
+          <h1 className={`text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
+          <div className={`flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full border ${
+            isHappyHour
+              ? 'bg-amber-900 text-amber-100 border-amber-900 animate-pulse'
+              : 'bg-white text-amber-700 border-amber-300'
+          }`}>
+            <span>🧋</span>
+            <span>
+              {isHappyHour
+                ? `Happy Hour — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
+                : `Happy Hour 6–8 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
+            </span>
+          </div>
         </header>
 
-        {/* Happy Hour Banner */}
-        {happyHour.active && (
-          <div className="bg-amber-400 text-amber-900 px-6 py-2 flex items-center gap-2 font-semibold text-sm">
-            <span>🧋</span>
-            <span>Happy Hour {happyHour.label} — {happyHour.discountPct}% off all drinks!</span>
+        {/* Big active banner */}
+        {isHappyHour && (
+          <div className="bg-amber-400 border-b border-amber-500 px-6 py-3 text-center">
+            <p className="text-amber-950 font-bold text-lg tracking-wide">
+              Happy Hour is ON! All drinks {HAPPY_HOUR_DISCOUNT_PCT}% off until 8 PM
+            </p>
+            <p className="text-amber-800 text-sm">Discounted prices shown below</p>
           </div>
         )}
 
         {/* Category tabs */}
-        <div className="flex gap-2 px-6 py-3 border-b overflow-x-auto">
+        <div className={`flex gap-2 px-6 py-3 border-b overflow-x-auto ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded text-sm font-medium whitespace-nowrap ${
                 selectedCategory === cat
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? isHappyHour ? 'bg-amber-700 text-white' : 'bg-black text-white'
+                  : isHappyHour ? 'bg-amber-100 text-amber-900 hover:bg-amber-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {cat}
@@ -149,15 +168,24 @@ export default function CustomerPage() {
             {filteredDrinks.map(drink => (
               <div
                 key={drink.drinkid}
-                className={`border rounded-xl p-4 text-left aspect-square flex flex-col justify-between relative ${categoryCardColors[drink.category || 'Other'] || categoryCardColors['Other']}`}
+                className={`border rounded-xl p-4 text-left aspect-square flex flex-col justify-between relative transition-all ${
+                  isHappyHour
+                    ? 'bg-amber-100 border-amber-400 hover:bg-amber-200 shadow-md'
+                    : categoryCardColors[drink.category || 'Other'] || categoryCardColors['Other']
+                }`}
               >
-                <span className="font-medium">{drink.name}</span>
+                {isHappyHour && (
+                  <span className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-tight">
+                    -{HAPPY_HOUR_DISCOUNT_PCT}%
+                  </span>
+                )}
+                <span className="font-medium pr-8">{drink.name}</span>
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
-                    {happyHour.active ? (
+                    {isHappyHour ? (
                       <>
-                        <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
-                        <span className="text-amber-700 font-semibold">${discountedCost(Number(drink.cost)).toFixed(2)}</span>
+                        <span className="text-xs text-gray-500 line-through">${Number(drink.cost).toFixed(2)}</span>
+                        <span className="text-base font-bold text-amber-800">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
                       </>
                     ) : (
                       <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
@@ -165,7 +193,9 @@ export default function CustomerPage() {
                   </div>
                   <button
                     onClick={() => setCustomizing(drink)}
-                    className="drink-add-btn w-8 h-8 rounded-full bg-black text-white text-lg flex items-center justify-center hover:bg-gray-800"
+                    className={`drink-add-btn w-8 h-8 rounded-full text-white text-lg flex items-center justify-center ${
+                      isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'
+                    }`}
                   >
                     +
                   </button>
@@ -180,8 +210,8 @@ export default function CustomerPage() {
       </div>
 
       {/* Cart sidebar */}
-      <div className="w-80 border-l flex flex-col bg-white">
-        <div className="px-4 py-4 border-b flex items-center justify-between">
+      <div className={`w-80 border-l flex flex-col transition-colors duration-500 ${isHappyHour ? 'bg-amber-50 border-amber-300' : 'bg-white'}`}>
+        <div className={`px-4 py-4 border-b flex items-center justify-between ${isHappyHour ? 'border-amber-300' : ''}`}>
           <h2 className="text-lg font-bold">Your Order</h2>
           <ChatToggle />
         </div>
@@ -191,7 +221,7 @@ export default function CustomerPage() {
             <p className="text-gray-400 text-sm text-center mt-8">Your cart is empty.</p>
           )}
           {cart.map((item, i) => (
-            <div key={i} className="bg-white border rounded p-3">
+            <div key={i} className={`border rounded p-3 ${isHappyHour ? 'bg-white border-amber-200' : 'bg-white border-gray-200'}`}>
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-medium">{item.drink.name} x{item.quantity}</p>
@@ -211,15 +241,32 @@ export default function CustomerPage() {
                   Remove
                 </button>
               </div>
-              <p className="text-sm text-right mt-1">${lineTotalDiscounted(item, discountMultiplier).toFixed(2)}</p>
+              {isHappyHour ? (
+                <div className="flex justify-end items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-400 line-through">${lineTotal(item).toFixed(2)}</span>
+                  <span className="text-sm font-bold text-amber-700">${lineTotalDiscounted(item, DISCOUNT).toFixed(2)}</span>
+                </div>
+              ) : (
+                <p className="text-sm text-right mt-1">${lineTotal(item).toFixed(2)}</p>
+              )}
             </div>
           ))}
         </div>
 
-        <div className="border-t p-4">
+        <div className={`border-t p-4 ${isHappyHour ? 'border-amber-300' : ''}`}>
+          {/* Savings callout */}
+          {isHappyHour && cart.length > 0 && cartSavings > 0 && (
+            <div className="mb-3 bg-amber-400 rounded-lg px-3 py-2 flex justify-between items-center">
+              <span className="text-amber-950 text-sm font-semibold">You save</span>
+              <span className="text-amber-950 font-bold">${cartSavings.toFixed(2)}</span>
+            </div>
+          )}
+
           <div className="flex justify-between mb-3">
             <span className="font-bold">Total</span>
-            <span className="font-bold">${cartTotal.toFixed(2)}</span>
+            <span className={`font-bold ${isHappyHour && cart.length > 0 ? 'text-amber-700 text-lg' : ''}`}>
+              ${cartTotal.toFixed(2)}
+            </span>
           </div>
           <div className="mb-3">
             <label className="block text-sm font-medium mb-1">Payment</label>
@@ -240,7 +287,9 @@ export default function CustomerPage() {
           <button
             onClick={checkout}
             disabled={cart.length === 0}
-            className="w-full py-3 bg-black text-white rounded font-medium disabled:opacity-40 hover:bg-gray-800"
+            className={`w-full py-3 text-white rounded font-medium disabled:opacity-40 ${
+              isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'
+            }`}
           >
             Place Order
           </button>
@@ -255,40 +304,41 @@ export default function CustomerPage() {
         <CustomizeModal
           drink={customizing}
           toppings={toppings}
+          isHappyHour={isHappyHour}
           onAdd={addToCart}
           onClose={() => setCustomizing(null)}
-          happyHour={happyHour}
         />
       )}
 
-      {/* Upsell attempt */}
+      {/* Upsell modal */}
       {showUpsell && (
         <UpsellModal
           drinks={drinks}
           cart={cart}
-          happyHour={happyHour}
+          isHappyHour={isHappyHour}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
           onConfirm={(tip) => { setShowUpsell(false); placeOrder(tip); }}
           onClose={() => setShowUpsell(false)}
         />
       )}
-
     </div>
   );
 }
 
+// ─── Customize Modal ─────────────────────────────────────────────────────────
+
 function CustomizeModal({
   drink,
   toppings,
+  isHappyHour,
   onAdd,
   onClose,
-  happyHour = { active: false, discountPct: 20, label: '6PM–8PM' },
 }: {
   drink: Drink;
   toppings: Topping[];
+  isHappyHour: boolean;
   onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[], customization: DrinkCustomization) => void;
   onClose: () => void;
-  happyHour?: HappyHourInfo;
 }) {
   const selectableToppings = toppings.filter(
     topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
@@ -316,26 +366,35 @@ function CustomizeModal({
     onAdd(drink, quantity, selected, { hot, sweetness, ice });
   };
 
-  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
   const toppingCost = selectableToppings.reduce(
     (sum, t) => sum + Number(t.price) * (toppingAmounts[t.toppingid] || 0),
     0
   );
-  const itemTotal = (Number(drink.cost) * discountMultiplier + toppingCost) * quantity;
+  const drinkCost = isHappyHour ? Number(drink.cost) * DISCOUNT : Number(drink.cost);
+  const itemTotal = (drinkCost + toppingCost) * quantity;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-4 border-b">
-          <h3 className="text-lg font-bold">{drink.name}</h3>
-          {happyHour.active ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
-              <span className="text-amber-700 font-semibold">${(Number(drink.cost) * discountMultiplier).toFixed(2)}</span>
-              <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">Happy Hour</span>
+
+        {/* Modal header */}
+        <div className={`px-5 py-4 border-b ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold">{drink.name}</h3>
+            {isHappyHour && (
+              <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                -{HAPPY_HOUR_DISCOUNT_PCT}%
+              </span>
+            )}
+          </div>
+          {isHappyHour ? (
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-sm text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
+              <span className="text-lg font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
+              <span className="text-xs text-amber-600">Happy Hour price</span>
             </div>
           ) : (
-            <p className="text-gray-600">${Number(drink.cost).toFixed(2)}</p>
+            <p className="text-gray-600 mt-0.5">${Number(drink.cost).toFixed(2)}</p>
           )}
         </div>
 
@@ -370,9 +429,7 @@ function CustomizeModal({
                     type="button"
                     onClick={() => {
                       setHot(option);
-                      if (option === 'Yes') {
-                        setIce('None');
-                      }
+                      if (option === 'Yes') setIce('None');
                     }}
                     aria-pressed={hot === option}
                     className={`customization-option ${hot === option ? 'customization-option-active' : ''}`}
@@ -407,11 +464,7 @@ function CustomizeModal({
                   <button
                     key={option}
                     type="button"
-                    onClick={() => {
-                      if (!iceDisabled) {
-                        setIce(option);
-                      }
-                    }}
+                    onClick={() => { if (!iceDisabled) setIce(option); }}
                     disabled={iceDisabled}
                     aria-pressed={ice === option}
                     className={`customization-option ${ice === option ? 'customization-option-active' : ''} ${iceDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -456,15 +509,15 @@ function CustomizeModal({
           )}
         </div>
 
-        <div className="border-t px-5 py-4 flex items-center justify-between">
-          <span className="font-bold">${itemTotal.toFixed(2)}</span>
+        <div className={`border-t px-5 py-4 flex items-center justify-between ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
+          <span className={`font-bold text-lg ${isHappyHour ? 'text-amber-700' : ''}`}>${itemTotal.toFixed(2)}</span>
           <div className="flex gap-2">
             <button onClick={onClose} className="px-4 py-2 border rounded">
               Cancel
             </button>
             <button
               onClick={handleAdd}
-              className="px-4 py-2 bg-black text-white rounded"
+              className={`px-4 py-2 text-white rounded ${isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'}`}
             >
               Add to Order
             </button>
@@ -475,17 +528,19 @@ function CustomizeModal({
   );
 }
 
+// ─── Upsell Modal ─────────────────────────────────────────────────────────────
+
 function UpsellModal({
   drinks,
   cart,
-  happyHour = { active: false, discountPct: 20, label: '6PM–8PM' },
+  isHappyHour,
   onAddDrink,
   onConfirm,
   onClose,
 }: {
   drinks: Drink[];
   cart: CartItem[];
-  happyHour?: HappyHourInfo;
+  isHappyHour: boolean;
   onAddDrink: (drink: Drink) => void;
   onConfirm: (tipAmount: number) => void;
   onClose: () => void;
@@ -493,14 +548,14 @@ function UpsellModal({
   const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
   const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
   const [added, setAdded] = useState<Set<number>>(new Set());
-  const discountMultiplier = happyHour.active ? (1 - happyHour.discountPct / 100) : 1;
 
-  const subtotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMultiplier), 0);
+  const discountMult = isHappyHour ? DISCOUNT : 1;
+  const subtotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMult), 0);
   const TIP_PRESETS = [0, 15, 20, 25] as const;
   const [tipPct, setTipPct] = useState<number | null>(20);
   const [customTip, setCustomTip] = useState('');
 
-  const tipAmount = customTip !== ''? Math.max(0, parseFloat(customTip) || 0) : (subtotal * (tipPct ?? 0)) / 100;
+  const tipAmount = customTip !== '' ? Math.max(0, parseFloat(customTip) || 0) : (subtotal * (tipPct ?? 0)) / 100;
 
   const handleAdd = (drink: Drink) => {
     onAddDrink(drink);
@@ -523,10 +578,10 @@ function UpsellModal({
             <div key={drink.drinkid} className="flex items-center justify-between border rounded-lg px-3 py-2">
               <div>
                 <p className="text-sm font-medium">{drink.name}</p>
-                {happyHour.active ? (
-                  <div className="flex items-center gap-1">
+                {isHappyHour ? (
+                  <div className="flex items-center gap-1.5">
                     <span className="text-xs text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
-                    <span className="text-xs text-amber-700 font-medium">${(Number(drink.cost) * discountMultiplier).toFixed(2)}</span>
+                    <span className="text-xs font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
                   </div>
                 ) : (
                   <p className="text-xs text-gray-500">${Number(drink.cost).toFixed(2)}</p>
@@ -542,6 +597,7 @@ function UpsellModal({
             </div>
           ))}
         </div>
+
         <div className="border-t pt-3 mt-1 px-4 pb-3">
           <p className="text-sm font-medium mb-2">Add a tip</p>
           <div className="grid grid-cols-4 gap-2 mb-2">
@@ -580,6 +636,7 @@ function UpsellModal({
             <span>Total</span><span>${(subtotal + tipAmount).toFixed(2)}</span>
           </div>
         </div>
+
         <div className="px-4 pb-4 flex gap-2">
           <button
             onClick={onClose}
@@ -598,6 +655,8 @@ function UpsellModal({
     </div>
   );
 }
+
+// ─── AI Chat ──────────────────────────────────────────────────────────────────
 
 interface ChatMessage {
   role: 'user' | 'assistant';

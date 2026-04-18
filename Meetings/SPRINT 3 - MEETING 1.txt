@@ -1,0 +1,79 @@
+SPRINT 3 - MEETING 1
+====================
+Prepared by: Cannon Cavazos / Ahmet Asim Aykanat
+Meeting Date: 4/17/2026
+
+Attendees
+---------
+Ahmet Asim Aykanat, Cannon Cavazos, Wyatt Voigt, Omer Aslan, Prathinav Allena
+
+Agenda
+------
+1. Fix issues with Sprint 2 document
+2. Backlog grooming
+3. Discuss additional backup release / extra features
+4. Assign Sprint 3 tasks
+
+Accomplishments
+---------------
+- Fixed errors in Sprint 2 written elements
+- Agreed on remaining tasks
+- Resubmitted Sprint 2 written materials
+
+Tasks
+-----
+ 1. Menu Item Add/Drop — Cannon
+    Implement functionality to add and remove menu items.
+
+ 2. Text to Speech — Prathinav
+    Add accessibility feature for reading text aloud.
+
+ 3. Backend Update to Restore Item — Ahmet
+    Fix backend to properly restore removed items.
+
+ 4. Weather API — Wyatt
+    Integrate weather API into application.
+
+ 5. Moving Menu Background — Ahmet
+    Add animated background to menu screen.
+
+ 6. Drink Images (Employee/Manager View) — Cannon
+    Add images for drinks in employee and manager interfaces.
+
+ 7. Show Recent Orders — Cannon
+    Display recent orders in system.
+
+ 8. Improved Text Size & Contrast — Prathinav
+    Enhance readability with larger text and better contrast.
+
+ 9. Spin the Wheel Feature — Ahmet
+    Implement spin-the-wheel feature.
+
+10. Email Notifications — Omer
+    Send notifications via email.
+
+11. Fix Translation Label Issues — Wyatt
+    Correct missing labels in translation feature.
+
+12. Edit Drinks in Checkout Tab — Omer
+    Allow editing drinks during checkout.
+
+13. Employee PIN Feature — Omer
+    Add PIN system for employee access.
+
+14. Manager Drink Editing — Cannon
+    Enable drink editing in manager view.
+
+15. Employee Management — Prathinav
+    Implement employee management functionality.
+
+Before Next Meeting
+-------------------
+- Work on assigned Sprint 3 tasks
+- Prepare updates for next meeting
+
+Minutes
+-------
+- Discussed necessary fixes for Sprint 2 documentation
+- Reviewed backlog and upcoming features
+- Assigned tasks for Sprint 3

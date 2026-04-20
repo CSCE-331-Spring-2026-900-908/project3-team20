@@ -54,7 +54,7 @@ export default function RootLayout({
           {themeInitScript}
         </Script>
       </head>
-      <body className="h-screen flex flex-col overflow-hidden" suppressHydrationWarning>
+      <body className="h-[100dvh] flex flex-col overflow-hidden" suppressHydrationWarning>
         <ButtonSizeProvider>
           <TranslationProvider>
             <AccessibilityBar />

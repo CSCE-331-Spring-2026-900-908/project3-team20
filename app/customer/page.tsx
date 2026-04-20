@@ -317,7 +317,7 @@ export default function CustomerPage() {
 
       {/* Cart drawer */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-40 max-h-[85vh] flex flex-col rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed bottom-0 left-0 right-0 z-40 max-h-[85dvh] flex flex-col rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out ${
           isHappyHour ? 'bg-amber-50' : 'bg-white'
         } ${cartOpen ? 'translate-y-0' : 'translate-y-full'}`}
       >
@@ -527,7 +527,7 @@ function CustomizeModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-lg w-full max-w-md max-h-[90dvh] sm:max-h-[80dvh] flex flex-col" onClick={e => e.stopPropagation()}>
 
         {/* Modal header */}
         <div className={`px-5 py-4 border-b ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
@@ -717,8 +717,8 @@ function SpinWheelModal({
   const n = WHEEL_PRIZES.length;
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-[#f5efe6] rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-[#f5efe6] rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden my-auto">
         <div className="px-5 py-4 text-center bg-white border-b border-stone-200">
           <h3 className="text-xl font-bold text-black">Spin for a Deal!</h3>
           <p className="text-sm text-stone-500 mt-0.5">Try your luck before you checkout</p>
@@ -852,13 +852,14 @@ function UpsellModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-4 border-b">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl flex flex-col max-h-[95dvh]" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b shrink-0">
           <h3 className="text-lg font-bold">Before you go...</h3>
           <p className="text-sm text-gray-500 mt-0.5">Want to add anything else to your order?</p>
         </div>
 
+        <div className="flex-1 overflow-y-auto min-h-0">
         <div className="p-4 space-y-2">
           {suggestions.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-2">You got it all!</p>
@@ -971,7 +972,9 @@ function UpsellModal({
           )}
         </div>
 
-        <div className="px-4 pb-4 flex gap-2">
+        </div>
+
+        <div className="px-4 pb-4 pt-3 flex gap-2 shrink-0 border-t bg-white rounded-b-xl">
           <button
             onClick={onClose}
             className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50"

@@ -130,7 +130,7 @@ export default function CustomerPage() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: itemsSnapshot, tip }),
+        body: JSON.stringify({ items: itemsSnapshot, tip, wheelPrize }),
       });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -148,6 +148,7 @@ export default function CustomerPage() {
               tip,
               orderId: data?.orderId,
               isHappyHour,
+              wheelPrize,
             }),
           }).catch(err => console.error('Email receipt failed:', err));
         }

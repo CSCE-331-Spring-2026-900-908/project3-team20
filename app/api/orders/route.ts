@@ -33,9 +33,10 @@ function getCustomizationInventoryUsage(customization: DrinkCustomization) {
 export async function POST(request: Request) {
   const client = await pool.connect();
   try {
-    const { items, employeeId } = (await request.json()) as {
+    const { items, employeeId, wheelPrize } = (await request.json()) as {
       items: CartItem[];
       employeeId?: number | string | null;
+      wheelPrize?: { discountPct: number; fixedDiscount?: number } | null;
     };
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'No items in order' }, { status: 400 });
@@ -49,13 +50,19 @@ export async function POST(request: Request) {
     const hour = now.getHours();
     const happyHourActive = isHappyHour(hour);
 
-    const total = items.reduce((sum, item) => {
+    const subtotal = items.reduce((sum, item) => {
       const drinkCost = happyHourActive
         ? applyHappyHourDiscount(Number(item.drink.cost))
         : Number(item.drink.cost);
       const toppingCost = item.toppings.reduce((s, t) => s + t.price * t.amount, 0);
       return sum + (drinkCost + toppingCost) * item.quantity;
     }, 0);
+    const wheelDiscountAmt = wheelPrize
+      ? wheelPrize.discountPct > 0
+        ? subtotal * wheelPrize.discountPct / 100
+        : (wheelPrize.fixedDiscount ?? 0)
+      : 0;
+    const total = Math.max(0, subtotal - wheelDiscountAmt);
 
     await client.query('BEGIN');
 

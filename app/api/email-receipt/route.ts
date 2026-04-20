@@ -11,6 +11,7 @@ interface EmailReceiptBody {
   tip: number;
   orderId?: number;
   isHappyHour: boolean;
+  wheelPrize?: { label: string; discountPct: number; fixedDiscount?: number } | null;
 }
 
 function estimateWaitMinutes(total: number): number {
@@ -26,11 +27,13 @@ function escapeHtml(s: string): string {
 function buildReceiptHtml(
   items: CartItem[],
   subtotal: number,
+  wheelDiscountAmt: number,
   tip: number,
   total: number,
   waitMinutes: number,
   orderId: number | undefined,
-  isHappyHour: boolean
+  isHappyHour: boolean,
+  wheelPrizeLabel?: string
 ): string {
   const rows = items.map(item => {
     const price = isHappyHour ? lineTotalDiscounted(item, 1 - HAPPY_HOUR_DISCOUNT_PCT / 100) : lineTotal(item);
@@ -70,6 +73,7 @@ function buildReceiptHtml(
     </table>
     <table style="width:100%;margin-top:16px;font-size:14px;">
       <tr><td>Subtotal</td><td style="text-align:right;">$${subtotal.toFixed(2)}</td></tr>
+      ${wheelDiscountAmt > 0 ? `<tr><td style="color:#16a34a;">🎡 Wheel discount${wheelPrizeLabel ? ` (${escapeHtml(wheelPrizeLabel)})` : ''}</td><td style="text-align:right;color:#16a34a;">-$${wheelDiscountAmt.toFixed(2)}</td></tr>` : ''}
       <tr><td>Tip</td><td style="text-align:right;">$${tip.toFixed(2)}</td></tr>
       <tr><td style="font-weight:700;padding-top:6px;border-top:1px solid #ddd;">Total</td>
           <td style="text-align:right;font-weight:700;padding-top:6px;border-top:1px solid #ddd;">$${total.toFixed(2)}</td></tr>
@@ -81,7 +85,7 @@ function buildReceiptHtml(
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as EmailReceiptBody;
-    const { email, items, tip, orderId, isHappyHour } = body;
+    const { email, items, tip, orderId, isHappyHour, wheelPrize } = body;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
@@ -92,9 +96,15 @@ export async function POST(request: Request) {
 
     const discountMult = isHappyHour ? 1 - HAPPY_HOUR_DISCOUNT_PCT / 100 : 1;
     const subtotal = items.reduce((s, i) => s + lineTotalDiscounted(i, discountMult), 0);
-    const total = subtotal + (tip || 0);
+    const wheelDiscountAmt = wheelPrize
+      ? wheelPrize.discountPct > 0
+        ? subtotal * wheelPrize.discountPct / 100
+        : (wheelPrize.fixedDiscount ?? 0)
+      : 0;
+    const discountedSubtotal = Math.max(0, subtotal - wheelDiscountAmt);
+    const total = discountedSubtotal + (tip || 0);
     const waitMinutes = estimateWaitMinutes(total);
-    const html = buildReceiptHtml(items, subtotal, tip || 0, total, waitMinutes, orderId, isHappyHour);
+    const html = buildReceiptHtml(items, subtotal, wheelDiscountAmt, tip || 0, total, waitMinutes, orderId, isHappyHour, wheelPrize?.label);
     const subject = `Your boba order — ~${waitMinutes} min wait${orderId != null ? ` (#${orderId})` : ''}`;
 
     const gmailUser = process.env.GMAIL_USER;

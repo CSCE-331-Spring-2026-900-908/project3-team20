@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { CartItem, DrinkCustomization } from '@/types';
 import { isHappyHour, applyHappyHourDiscount } from '@/lib/happyHour';
+import { getChicagoDate, getChicagoHour } from '@/lib/time';
 
 const KIOSK_EMPLOYEE_ID = 1;
 const SWEETNESS_TO_SUGAR_USAGE: Record<DrinkCustomization['sweetness'], number> = {
@@ -46,8 +47,8 @@ export async function POST(request: Request) {
       ? Number(employeeId)
       : KIOSK_EMPLOYEE_ID;
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const hour = now.getHours();
+    const dateStr = getChicagoDate(now);
+    const hour = getChicagoHour(now);
     const happyHourActive = isHappyHour(hour);
 
     const subtotal = items.reduce((sum, item) => {

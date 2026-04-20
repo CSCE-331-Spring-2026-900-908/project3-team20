@@ -6,9 +6,10 @@ import {
   isHappyHour,
   formatHappyHourLabel,
 } from '@/lib/happyHour';
+import { getChicagoHour } from '@/lib/time';
 
 export async function GET() {
-  const hour = new Date().getHours();
+  const hour = getChicagoHour();
   return NextResponse.json({
     active: isHappyHour(hour),
     startHour: HAPPY_HOUR_START,

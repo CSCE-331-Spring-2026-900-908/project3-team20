@@ -29,14 +29,14 @@ interface WheelPrize {
 }
 
 const WHEEL_PRIZES: WheelPrize[] = [
-  { label: '5% Off',    description: '5% off your entire order!',  color: '#EF4444', discountPct: 5 },
-  { label: 'Free Top.', description: 'One free topping on us!',    color: '#06B6D4', discountPct: 0 },
-  { label: '10% Off',   description: '10% off your entire order!', color: '#8B5CF6', discountPct: 10 },
-  { label: 'No Luck',   description: 'Better luck next time!',     color: '#F59E0B', discountPct: 0 },
-  { label: '15% Off',   description: '15% off your entire order!', color: '#10B981', discountPct: 15 },
-  { label: '$0.50 Off', description: '$0.50 off your order!',      color: '#EC4899', discountPct: 0, fixedDiscount: 0.50 },
-  { label: '20% Off',   description: '20% off your entire order!', color: '#3B82F6', discountPct: 20 },
-  { label: 'Try Again', description: 'Maybe next time!',           color: '#6B7280', discountPct: 0 },
+  { label: '5% Off',    description: '5% off your entire order!',  color: '#b45309', discountPct: 5 },
+  { label: 'No Luck',   description: 'Better luck next time!',     color: '#78716c', discountPct: 0 },
+  { label: '10% Off',   description: '10% off your entire order!', color: '#92400e', discountPct: 10 },
+  { label: 'Try Again', description: 'Maybe next time!',           color: '#44403c', discountPct: 0 },
+  { label: '15% Off',   description: '15% off your entire order!', color: '#a16207', discountPct: 15 },
+  { label: '$0.50 Off', description: '$0.50 off your order!',      color: '#57534e', discountPct: 0, fixedDiscount: 0.50 },
+  { label: '20% Off',   description: '20% off your entire order!', color: '#78350f', discountPct: 20 },
+  { label: 'No Luck',   description: 'Better luck next time!',     color: '#a8a29e', discountPct: 0 },
 ];
 
 export default function CustomerPage() {
@@ -52,6 +52,7 @@ export default function CustomerPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [wheelPrize, setWheelPrize] = useState<WheelPrize | null>(null);
+  const [hasSpunWheel, setHasSpunWheel] = useState(false);
 
   // --- Happy hour: computed purely client-side, rechecked every minute ---
   const [isHappyHour, setIsHappyHour] = useState(false);
@@ -134,6 +135,7 @@ export default function CustomerPage() {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         setCart([]);
+        setHasSpunWheel(false);
         setOrderPlaced(true);
         setTimeout(() => setOrderPlaced(false), 3000);
         if (email) {
@@ -437,6 +439,8 @@ export default function CustomerPage() {
       {/* Spin the wheel modal */}
       {showSpinWheel && (
         <SpinWheelModal
+          hasSpun={hasSpunWheel}
+          onSpun={() => setHasSpunWheel(true)}
           onContinue={(prize) => { setWheelPrize(prize); setShowSpinWheel(false); setShowUpsell(true); }}
           onSkip={() => { setShowSpinWheel(false); setShowUpsell(true); }}
         />
@@ -672,15 +676,18 @@ function CustomizeModal({
 // ─── Spin the Wheel Modal ─────────────────────────────────────────────────────
 
 function SpinWheelModal({
+  hasSpun,
+  onSpun,
   onContinue,
   onSkip,
 }: {
+  hasSpun: boolean;
+  onSpun: () => void;
   onContinue: (prize: WheelPrize) => void;
   onSkip: () => void;
 }) {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
-  const [hasSpun, setHasSpun] = useState(false);
   const [prize, setPrize] = useState<WheelPrize | null>(null);
 
   const spin = () => {
@@ -695,7 +702,7 @@ function SpinWheelModal({
     setTimeout(() => {
       setSpinning(false);
       setPrize(WHEEL_PRIZES[prizeIdx]);
-      setHasSpun(true);
+      onSpun();
     }, 4000);
   };
 
@@ -705,9 +712,9 @@ function SpinWheelModal({
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden">
-        <div className="px-5 py-4 text-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}>
+        <div className="px-5 py-4 text-center bg-black">
           <h3 className="text-xl font-bold text-white">Spin for a Deal!</h3>
-          <p className="text-sm text-white/80 mt-0.5">Try your luck before you checkout</p>
+          <p className="text-sm text-white/60 mt-0.5">Try your luck before you checkout</p>
         </div>
 
         <div className="p-4 flex flex-col items-center gap-3">
@@ -766,8 +773,7 @@ function SpinWheelModal({
               <button
                 onClick={spin}
                 disabled={spinning}
-                className="w-full py-3 rounded-xl font-bold text-white text-lg disabled:opacity-60 transition hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}
+                className="w-full py-3 rounded-xl font-bold text-white text-lg disabled:opacity-60 transition bg-black hover:bg-gray-800"
               >
                 {spinning ? 'Spinning...' : '🎰 Spin the Wheel!'}
               </button>

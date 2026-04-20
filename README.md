@@ -55,4 +55,4 @@ To display a table from the sql database
 SELECT * FROM <table>;
 
 How to access the db from the terminal:
-psql -h csce-315-db.engr.tamu.edu -U <team> -d <dbname>
+psql -h <group> -U <team> -d <dbname>

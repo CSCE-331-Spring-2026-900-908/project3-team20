@@ -29,10 +29,10 @@ export function AccessibilityBar() {
       <button
         id="theme-toggle"
         type="button"
-        aria-label="Toggle color mode"
+        aria-label="Toggle high contrast mode"
         className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
       >
-        Dark Mode
+        High Contrast
       </button>
       <ButtonSizeToggle />
       <TranslateButton />

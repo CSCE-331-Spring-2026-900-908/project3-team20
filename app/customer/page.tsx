@@ -726,7 +726,7 @@ function ChatToggle() {
         AI Chat
       </button>
       {open && (
-        <div className="fixed top-12 right-4 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
+        <div data-chat-popup className="fixed top-12 right-4 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
           <div className="px-4 py-3 bg-black text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

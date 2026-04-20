@@ -14,7 +14,6 @@ interface EmailReceiptBody {
 }
 
 function estimateWaitMinutes(total: number): number {
-  // Simple complexity proxy: 3 min base + 1 min per $2.50 of total, capped at 30.
   return Math.min(30, Math.max(3, Math.round(3 + total / 2.5)));
 }
 

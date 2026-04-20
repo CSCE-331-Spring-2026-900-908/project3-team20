@@ -24,6 +24,7 @@ export default function CustomerPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [customizing, setCustomizing] = useState<Drink | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [showUpsell, setShowUpsell] = useState(false);
@@ -75,9 +76,21 @@ export default function CustomerPage() {
     selectedToppings: CartItemTopping[],
     customization: DrinkCustomization
   ) => {
-    setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings, customization }]);
+    if (editingIndex !== null) {
+      setCart(prev => prev.map((item, i) =>
+        i === editingIndex ? { drink, quantity, toppings: selectedToppings, customization } : item
+      ));
+      setEditingIndex(null);
+    } else {
+      setCart(prev => [...prev, { drink, quantity, toppings: selectedToppings, customization }]);
+    }
     setCustomizing(null);
-  }, []);
+  }, [editingIndex]);
+
+  const editItem = useCallback((index: number) => {
+    setEditingIndex(index);
+    setCustomizing(cart[index].drink);
+  }, [cart]);
 
   const removeFromCart = useCallback((index: number) => {
     setCart(prev => prev.filter((_, i) => i !== index));
@@ -240,21 +253,32 @@ export default function CustomerPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-medium">{item.drink.name} x{item.quantity}</p>
-                  <p className="text-xs text-gray-500">
-                    Hot: {item.customization.hot} | Sweetness: {item.customization.sweetness} | Ice: {item.customization.ice}
-                  </p>
-                  {item.toppings.filter(t => t.amount > 0).map(t => (
-                    <p key={t.toppingid} className="text-xs text-gray-500">
-                      + {t.name} x{t.amount}
-                    </p>
-                  ))}
                 </div>
-                <button
-                  onClick={() => removeFromCart(i)}
-                  className="text-red-500 text-sm hover:underline"
-                >
-                  Remove
-                </button>
+                <div className="flex gap-1 items-center">
+                  <button
+                    onClick={() => editItem(i)}
+                    aria-label="Edit item"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-amber-100 hover:text-amber-700 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => removeFromCart(i)}
+                    aria-label="Remove item"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               {isHappyHour ? (
                 <div className="flex justify-end items-center gap-2 mt-1">
@@ -321,7 +345,10 @@ export default function CustomerPage() {
           toppings={toppings}
           isHappyHour={isHappyHour}
           onAdd={addToCart}
-          onClose={() => setCustomizing(null)}
+          onClose={() => { setCustomizing(null); setEditingIndex(null); }}
+          initialQuantity={editingIndex !== null ? cart[editingIndex].quantity : 1}
+          initialToppings={editingIndex !== null ? cart[editingIndex].toppings : []}
+          initialCustomization={editingIndex !== null ? cart[editingIndex].customization : DEFAULT_CUSTOMIZATION}
         />
       )}
 
@@ -348,21 +375,29 @@ function CustomizeModal({
   isHappyHour,
   onAdd,
   onClose,
+  initialQuantity = 1,
+  initialToppings = [],
+  initialCustomization = DEFAULT_CUSTOMIZATION,
 }: {
   drink: Drink;
   toppings: Topping[];
   isHappyHour: boolean;
   onAdd: (drink: Drink, qty: number, toppings: CartItemTopping[], customization: DrinkCustomization) => void;
   onClose: () => void;
+  initialQuantity?: number;
+  initialToppings?: CartItemTopping[];
+  initialCustomization?: DrinkCustomization;
 }) {
   const selectableToppings = toppings.filter(
     topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
   );
-  const [quantity, setQuantity] = useState(1);
-  const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>({});
-  const [hot, setHot] = useState<DrinkCustomization['hot']>(DEFAULT_CUSTOMIZATION.hot);
-  const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(DEFAULT_CUSTOMIZATION.sweetness);
-  const [ice, setIce] = useState<DrinkCustomization['ice']>(DEFAULT_CUSTOMIZATION.ice);
+  const [quantity, setQuantity] = useState(initialQuantity);
+  const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>(
+    () => Object.fromEntries(initialToppings.map(t => [t.toppingid, t.amount]))
+  );
+  const [hot, setHot] = useState<DrinkCustomization['hot']>(initialCustomization.hot);
+  const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(initialCustomization.sweetness);
+  const [ice, setIce] = useState<DrinkCustomization['ice']>(initialCustomization.ice);
   const iceDisabled = hot === 'Yes';
 
   const setToppingAmount = (id: number, amount: number) => {

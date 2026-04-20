@@ -29,14 +29,14 @@ interface WheelPrize {
 }
 
 const WHEEL_PRIZES: WheelPrize[] = [
-  { label: '5% Off',    description: '5% off your entire order!',  color: '#b45309', discountPct: 5 },
-  { label: 'No Luck',   description: 'Better luck next time!',     color: '#78716c', discountPct: 0 },
-  { label: '10% Off',   description: '10% off your entire order!', color: '#92400e', discountPct: 10 },
-  { label: 'Try Again', description: 'Maybe next time!',           color: '#44403c', discountPct: 0 },
-  { label: '15% Off',   description: '15% off your entire order!', color: '#a16207', discountPct: 15 },
-  { label: '$0.50 Off', description: '$0.50 off your order!',      color: '#57534e', discountPct: 0, fixedDiscount: 0.50 },
+  { label: '5% Off',    description: '5% off your entire order!',  color: '#d97706', discountPct: 5 },
+  { label: 'No Luck',   description: 'Better luck next time!',     color: '#57534e', discountPct: 0 },
+  { label: '10% Off',   description: '10% off your entire order!', color: '#b45309', discountPct: 10 },
+  { label: 'Try Again', description: 'Maybe next time!',           color: '#292524', discountPct: 0 },
+  { label: '15% Off',   description: '15% off your entire order!', color: '#92400e', discountPct: 15 },
+  { label: '$0.50 Off', description: '$0.50 off your order!',      color: '#78716c', discountPct: 0, fixedDiscount: 0.50 },
   { label: '20% Off',   description: '20% off your entire order!', color: '#78350f', discountPct: 20 },
-  { label: 'No Luck',   description: 'Better luck next time!',     color: '#a8a29e', discountPct: 0 },
+  { label: 'No Luck',   description: 'Better luck next time!',     color: '#44403c', discountPct: 0 },
 ];
 
 export default function CustomerPage() {
@@ -160,8 +160,11 @@ export default function CustomerPage() {
   const checkout = () => {
     if (cart.length === 0) return;
     setCartOpen(false);
-    setWheelPrize(null);
-    setShowSpinWheel(true);
+    if (hasSpunWheel) {
+      setShowUpsell(true);
+    } else {
+      setShowSpinWheel(true);
+    }
   };
 
   return (
@@ -455,7 +458,7 @@ export default function CustomerPage() {
           wheelPrize={wheelPrize}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
           onConfirm={(tip, email) => { setShowUpsell(false); setWheelPrize(null); placeOrder(tip, email); }}
-          onClose={() => { setShowUpsell(false); setWheelPrize(null); }}
+          onClose={() => { setShowUpsell(false); }}
         />
       )}
     </div>
@@ -711,10 +714,10 @@ function SpinWheelModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden">
-        <div className="px-5 py-4 text-center bg-black">
-          <h3 className="text-xl font-bold text-white">Spin for a Deal!</h3>
-          <p className="text-sm text-white/60 mt-0.5">Try your luck before you checkout</p>
+      <div className="bg-[#f5efe6] rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden">
+        <div className="px-5 py-4 text-center bg-white border-b border-stone-200">
+          <h3 className="text-xl font-bold text-black">Spin for a Deal!</h3>
+          <p className="text-sm text-stone-500 mt-0.5">Try your luck before you checkout</p>
         </div>
 
         <div className="p-4 flex flex-col items-center gap-3">

@@ -18,6 +18,27 @@ type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
 const HIDDEN_CUSTOMIZATION_TOPPINGS = new Set(['hot', 'sugar', 'ice']);
 const DISCOUNT = 1 - HAPPY_HOUR_DISCOUNT_PCT / 100; // e.g. 0.80 for 20% off
 
+// ─── Spin the Wheel ───────────────────────────────────────────────────────────
+
+interface WheelPrize {
+  label: string;
+  description: string;
+  color: string;
+  discountPct: number;
+  fixedDiscount?: number;
+}
+
+const WHEEL_PRIZES: WheelPrize[] = [
+  { label: '5% Off',    description: '5% off your entire order!',  color: '#EF4444', discountPct: 5 },
+  { label: 'Free Top.', description: 'One free topping on us!',    color: '#06B6D4', discountPct: 0 },
+  { label: '10% Off',   description: '10% off your entire order!', color: '#8B5CF6', discountPct: 10 },
+  { label: 'No Luck',   description: 'Better luck next time!',     color: '#F59E0B', discountPct: 0 },
+  { label: '15% Off',   description: '15% off your entire order!', color: '#10B981', discountPct: 15 },
+  { label: '$0.50 Off', description: '$0.50 off your order!',      color: '#EC4899', discountPct: 0, fixedDiscount: 0.50 },
+  { label: '20% Off',   description: '20% off your entire order!', color: '#3B82F6', discountPct: 20 },
+  { label: 'Try Again', description: 'Maybe next time!',           color: '#6B7280', discountPct: 0 },
+];
+
 export default function CustomerPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
@@ -28,6 +49,8 @@ export default function CustomerPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [showUpsell, setShowUpsell] = useState(false);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [wheelPrize, setWheelPrize] = useState<WheelPrize | null>(null);
 
   // --- Happy hour: computed purely client-side, rechecked every minute ---
   const [isHappyHour, setIsHappyHour] = useState(false);
@@ -131,7 +154,8 @@ export default function CustomerPage() {
 
   const checkout = () => {
     if (cart.length === 0) return;
-    setShowUpsell(true);
+    setWheelPrize(null);
+    setShowSpinWheel(true);
   };
 
   return (
@@ -352,15 +376,24 @@ export default function CustomerPage() {
         />
       )}
 
+      {/* Spin the wheel modal */}
+      {showSpinWheel && (
+        <SpinWheelModal
+          onContinue={(prize) => { setWheelPrize(prize); setShowSpinWheel(false); setShowUpsell(true); }}
+          onSkip={() => { setShowSpinWheel(false); setShowUpsell(true); }}
+        />
+      )}
+
       {/* Upsell modal */}
       {showUpsell && (
         <UpsellModal
           drinks={drinks}
           cart={cart}
           isHappyHour={isHappyHour}
+          wheelPrize={wheelPrize}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
-          onConfirm={(tip, email) => { setShowUpsell(false); placeOrder(tip, email); }}
-          onClose={() => setShowUpsell(false)}
+          onConfirm={(tip, email) => { setShowUpsell(false); setWheelPrize(null); placeOrder(tip, email); }}
+          onClose={() => { setShowUpsell(false); setWheelPrize(null); }}
         />
       )}
     </div>
@@ -578,12 +611,135 @@ function CustomizeModal({
   );
 }
 
+// ─── Spin the Wheel Modal ─────────────────────────────────────────────────────
+
+function SpinWheelModal({
+  onContinue,
+  onSkip,
+}: {
+  onContinue: (prize: WheelPrize) => void;
+  onSkip: () => void;
+}) {
+  const [rotation, setRotation] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
+  const [prize, setPrize] = useState<WheelPrize | null>(null);
+
+  const spin = () => {
+    if (spinning || hasSpun) return;
+    const prizeIdx = Math.floor(Math.random() * WHEEL_PRIZES.length);
+    const fullRotations = 5 + Math.floor(Math.random() * 3);
+    const segAngle = 360 / WHEEL_PRIZES.length;
+    const prizeCenter = (prizeIdx + 0.5) * segAngle;
+    const extraAngle = (360 - (prizeCenter % 360)) % 360;
+    setSpinning(true);
+    setRotation(r => r + fullRotations * 360 + extraAngle);
+    setTimeout(() => {
+      setSpinning(false);
+      setPrize(WHEEL_PRIZES[prizeIdx]);
+      setHasSpun(true);
+    }, 4000);
+  };
+
+  const cx = 150, cy = 160, r = 128;
+  const n = WHEEL_PRIZES.length;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden">
+        <div className="px-5 py-4 text-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}>
+          <h3 className="text-xl font-bold text-white">Spin for a Deal!</h3>
+          <p className="text-sm text-white/80 mt-0.5">Try your luck before you checkout</p>
+        </div>
+
+        <div className="p-4 flex flex-col items-center gap-3">
+          <svg width="280" height="290" viewBox="0 0 300 310">
+            {/* Fixed pointer at top */}
+            <polygon points="140,4 160,4 150,26" fill="#111827" />
+            {/* Rotating wheel */}
+            <g style={{
+              transform: `rotate(${rotation}deg)`,
+              transformOrigin: `${cx}px ${cy}px`,
+              transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+            }}>
+              {WHEEL_PRIZES.map((p, i) => {
+                const startAngle = (i / n * 360 - 90) * Math.PI / 180;
+                const endAngle = ((i + 1) / n * 360 - 90) * Math.PI / 180;
+                const x1 = cx + r * Math.cos(startAngle);
+                const y1 = cy + r * Math.sin(startAngle);
+                const x2 = cx + r * Math.cos(endAngle);
+                const y2 = cy + r * Math.sin(endAngle);
+                const midAngle = ((i + 0.5) / n * 360 - 90) * Math.PI / 180;
+                const tx = cx + r * 0.63 * Math.cos(midAngle);
+                const ty = cy + r * 0.63 * Math.sin(midAngle);
+                const textRot = (i + 0.5) * (360 / n) - 90;
+                const d = `M ${cx} ${cy} L ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z`;
+                return (
+                  <g key={i}>
+                    <path d={d} fill={p.color} stroke="white" strokeWidth="2" />
+                    <text
+                      x={tx.toFixed(1)} y={ty.toFixed(1)}
+                      textAnchor="middle" dominantBaseline="middle"
+                      fontSize="10" fontWeight="bold" fill="white"
+                      transform={`rotate(${textRot}, ${tx.toFixed(1)}, ${ty.toFixed(1)})`}
+                    >{p.label}</text>
+                  </g>
+                );
+              })}
+              <circle cx={cx} cy={cy} r="20" fill="white" stroke="#e5e7eb" strokeWidth="3" />
+              <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="16">🎡</text>
+            </g>
+          </svg>
+
+          {prize && (
+            <div
+              className="w-full text-center px-4 py-3 rounded-xl"
+              style={{ backgroundColor: prize.color + '22', border: `2px solid ${prize.color}55` }}
+            >
+              <p className="text-2xl font-bold" style={{ color: prize.color }}>
+                {(prize.discountPct > 0 || prize.fixedDiscount) ? '🎉 ' : ''}{prize.label}
+              </p>
+              <p className="text-gray-600 text-sm mt-0.5">{prize.description}</p>
+            </div>
+          )}
+
+          {!hasSpun ? (
+            <>
+              <button
+                onClick={spin}
+                disabled={spinning}
+                className="w-full py-3 rounded-xl font-bold text-white text-lg disabled:opacity-60 transition hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}
+              >
+                {spinning ? 'Spinning...' : '🎰 Spin the Wheel!'}
+              </button>
+              {!spinning && (
+                <button onClick={onSkip} className="text-xs text-gray-400 hover:text-gray-600 underline">
+                  Skip and go to checkout
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={() => onContinue(prize!)}
+              className="w-full py-3 rounded-xl font-bold text-white bg-black hover:bg-gray-800 transition"
+            >
+              Continue to Checkout →
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Upsell Modal ─────────────────────────────────────────────────────────────
 
 function UpsellModal({
   drinks,
   cart,
   isHappyHour,
+  wheelPrize,
   onAddDrink,
   onConfirm,
   onClose,
@@ -591,6 +747,7 @@ function UpsellModal({
   drinks: Drink[];
   cart: CartItem[];
   isHappyHour: boolean;
+  wheelPrize?: WheelPrize | null;
   onAddDrink: (drink: Drink) => void;
   onConfirm: (tipAmount: number, email?: string) => void;
   onClose: () => void;
@@ -605,11 +762,18 @@ function UpsellModal({
 
   const discountMult = isHappyHour ? DISCOUNT : 1;
   const subtotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMult), 0);
+  const wheelDiscountAmt = wheelPrize
+    ? wheelPrize.discountPct > 0
+      ? subtotal * wheelPrize.discountPct / 100
+      : (wheelPrize.fixedDiscount ?? 0)
+    : 0;
+  const discountedSubtotal = Math.max(0, subtotal - wheelDiscountAmt);
+
   const TIP_PRESETS = [0, 15, 20, 25] as const;
   const [tipPct, setTipPct] = useState<number | null>(20);
   const [customTip, setCustomTip] = useState('');
 
-  const tipAmount = customTip !== '' ? Math.max(0, parseFloat(customTip) || 0) : (subtotal * (tipPct ?? 0)) / 100;
+  const tipAmount = customTip !== '' ? Math.max(0, parseFloat(customTip) || 0) : (discountedSubtotal * (tipPct ?? 0)) / 100;
 
   const handleAdd = (drink: Drink) => {
     onAddDrink(drink);
@@ -652,6 +816,18 @@ function UpsellModal({
           ))}
         </div>
 
+        {/* Wheel prize badge */}
+        {wheelPrize && (
+          <div
+            className="mx-4 mb-1 px-3 py-2 rounded-lg flex items-center gap-2 text-sm"
+            style={{ backgroundColor: wheelPrize.color + '22', border: `1.5px solid ${wheelPrize.color}55` }}
+          >
+            <span>🎡</span>
+            <span className="font-bold" style={{ color: wheelPrize.color }}>{wheelPrize.label}</span>
+            <span className="text-gray-500 text-xs">— {wheelPrize.description}</span>
+          </div>
+        )}
+
         <div className="border-t pt-3 mt-1 px-4 pb-3">
           <p className="text-sm font-medium mb-2">Add a tip</p>
           <div className="grid grid-cols-4 gap-2 mb-2">
@@ -667,7 +843,7 @@ function UpsellModal({
                 }`}
               >
                 {pct === 0 ? 'No tip' : `${pct}%`}
-                {pct !== 0 && <><br /><span className="font-normal opacity-70">${(subtotal * pct / 100).toFixed(2)}</span></>}
+                {pct !== 0 && <><br /><span className="font-normal opacity-70">${(discountedSubtotal * pct / 100).toFixed(2)}</span></>}
               </button>
             ))}
           </div>
@@ -683,11 +859,16 @@ function UpsellModal({
               className="flex-1 border rounded-lg px-2 py-1.5 text-sm"
             />
           </div>
+          {wheelPrize && wheelDiscountAmt > 0 && (
+            <div className="flex justify-between text-sm text-green-600 font-medium mb-0.5">
+              <span>Wheel discount</span><span>-${wheelDiscountAmt.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm text-gray-500">
             <span>Tip</span><span>${tipAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm font-bold mt-1">
-            <span>Total</span><span>${(subtotal + tipAmount).toFixed(2)}</span>
+            <span>Total</span><span>${(discountedSubtotal + tipAmount).toFixed(2)}</span>
           </div>
         </div>
 

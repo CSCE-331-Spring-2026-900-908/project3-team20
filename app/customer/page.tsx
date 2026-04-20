@@ -49,6 +49,7 @@ export default function CustomerPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [showUpsell, setShowUpsell] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [wheelPrize, setWheelPrize] = useState<WheelPrize | null>(null);
   const [hasSpunWheel, setHasSpunWheel] = useState(false);
@@ -93,6 +94,7 @@ export default function CustomerPage() {
   const cartTotal = cart.reduce((sum, item) => sum + lineTotalDiscounted(item, discountMultiplier), 0);
   const cartFullPrice = cart.reduce((sum, item) => sum + lineTotal(item), 0);
   const cartSavings = cartFullPrice - cartTotal;
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const addToCart = useCallback((
     drink: Drink,
@@ -114,6 +116,7 @@ export default function CustomerPage() {
   const editItem = useCallback((index: number) => {
     setEditingIndex(index);
     setCustomizing(cart[index].drink);
+    setCartOpen(false);
   }, [cart]);
 
   const removeFromCart = useCallback((index: number) => {
@@ -156,36 +159,45 @@ export default function CustomerPage() {
 
   const checkout = () => {
     if (cart.length === 0) return;
+    setCartOpen(false);
     setWheelPrize(null);
     setShowSpinWheel(true);
   };
 
   return (
-    <div className={`flex h-full text-black transition-colors duration-500 ${isHappyHour ? 'bg-amber-50' : 'bg-[#f5efe6]'}`}>
-      <Link
-        href="/"
-        className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"
-      >
-        Back to Home
-      </Link>
-
+    <div className={`flex flex-col h-full text-black transition-colors duration-500 ${isHappyHour ? 'bg-amber-50' : 'bg-[#f5efe6]'}`}>
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Header — always shows the happy hour schedule */}
-        <header className={`border-b px-6 py-4 flex items-center justify-between transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
-          <h1 className={`text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
-          <div className={`flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full border ${
-            isHappyHour
-              ? 'bg-amber-900 text-amber-100 border-amber-900 animate-pulse'
-              : 'bg-white text-amber-700 border-amber-300'
-          }`}>
-            <span>🧋</span>
-            <span>
-              {isHappyHour
-                ? `Happy Hour — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
-                : `Happy Hour 6–8 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
-            </span>
+        <header className={`border-b px-6 py-4 flex items-center justify-between gap-4 transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-white px-3 py-1.5 text-sm font-semibold text-amber-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+              Home
+            </Link>
+            <h1 className={`text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full border ${
+              isHappyHour
+                ? 'bg-amber-900 text-amber-100 border-amber-900 animate-pulse'
+                : 'bg-white text-amber-700 border-amber-300'
+            }`}>
+              <span>🧋</span>
+              <span>
+                {isHappyHour
+                  ? `Happy Hour — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
+                  : `Happy Hour 6–8 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
+              </span>
+            </div>
+            <ChatToggle />
           </div>
         </header>
 
@@ -217,7 +229,7 @@ export default function CustomerPage() {
         </div>
 
         {/* Drink grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 pb-28">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredDrinks.map(drink => (
               <div
@@ -263,14 +275,60 @@ export default function CustomerPage() {
         </div>
       </div>
 
-      {/* Cart sidebar */}
-      <div className={`w-80 border-l flex flex-col transition-colors duration-500 ${isHappyHour ? 'bg-amber-50 border-amber-300' : 'bg-white'}`}>
-        <div className={`px-4 py-4 border-b flex items-center justify-between ${isHappyHour ? 'border-amber-300' : ''}`}>
-          <h2 className="text-lg font-bold">Your Order</h2>
-          <ChatToggle />
+      {/* Backdrop */}
+      {cartOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 transition-opacity"
+          onClick={() => setCartOpen(false)}
+        />
+      )}
+
+      {/* Sticky bottom summary bar */}
+      <button
+        onClick={() => cart.length > 0 && setCartOpen(true)}
+        disabled={cart.length === 0 || undefined}
+        className={`fixed bottom-0 left-0 right-0 z-30 px-6 py-4 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.08)] transition-all ${
+          cart.length === 0
+            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            : isHappyHour
+              ? 'bg-amber-700 text-white hover:bg-amber-800'
+              : 'bg-[#e3d4b8] text-amber-950 hover:bg-[#d6c39e]'
+        } ${cartOpen ? 'translate-y-full' : 'translate-y-0'}`}
+      >
+        <span className="font-bold text-lg">
+          {cart.length === 0 ? 'Your cart is empty' : `View Order (${cartCount})`}
+        </span>
+        {cart.length > 0 && (
+          <span className="font-bold text-lg flex items-center gap-2">
+            ${cartTotal.toFixed(2)}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          </span>
+        )}
+      </button>
+
+      {/* Cart drawer */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-40 max-h-[85vh] flex flex-col rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out ${
+          isHappyHour ? 'bg-amber-50' : 'bg-white'
+        } ${cartOpen ? 'translate-y-0' : 'translate-y-full'}`}
+      >
+        <div className={`px-5 pt-5 pb-3 border-b flex items-center justify-between ${isHappyHour ? 'border-amber-300' : ''}`}>
+          <h2 className="text-xl font-bold">Your Order</h2>
+          <button
+            onClick={() => setCartOpen(false)}
+            aria-label="Close cart"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {cart.length === 0 && (
             <p className="text-gray-400 text-sm text-center mt-8">Your cart is empty.</p>
           )}
@@ -318,7 +376,7 @@ export default function CustomerPage() {
           ))}
         </div>
 
-        <div className={`border-t p-4 ${isHappyHour ? 'border-amber-300' : ''}`}>
+        <div className={`border-t p-5 ${isHappyHour ? 'border-amber-300' : ''}`}>
           {/* Savings callout */}
           {isHappyHour && cart.length > 0 && cartSavings > 0 && (
             <div className="mb-3 bg-amber-400 rounded-lg px-3 py-2 flex justify-between items-center">
@@ -351,9 +409,9 @@ export default function CustomerPage() {
           </div>
           <button
             onClick={checkout}
-            disabled={cart.length === 0}
-            className={`w-full py-3 text-white rounded font-medium disabled:opacity-40 ${
-              isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'
+            disabled={cart.length === 0 || undefined}
+            className={`w-full py-3 rounded font-medium disabled:opacity-40 ${
+              isHappyHour ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-[#e3d4b8] text-amber-950 hover:bg-[#d6c39e]'
             }`}
           >
             Place Order

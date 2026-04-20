@@ -46,3 +46,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 Website URL: https://project3-team20.vercel.app/
+
+
+
+SQL Commands for developing:
+
+To display a table from the sql database
+SELECT * FROM <table>;
+
+How to access the db from the terminal:
+psql -h csce-315-db.engr.tamu.edu -U <team> -d <dbname>

@@ -442,7 +442,7 @@ export default function CustomerPage() {
           hasSpun={hasSpunWheel}
           onSpun={() => setHasSpunWheel(true)}
           onContinue={(prize) => { setWheelPrize(prize); setShowSpinWheel(false); setShowUpsell(true); }}
-          onSkip={() => { setShowSpinWheel(false); setShowUpsell(true); }}
+          onSkip={() => { setHasSpunWheel(true); setShowSpinWheel(false); setShowUpsell(true); }}
         />
       )}
 

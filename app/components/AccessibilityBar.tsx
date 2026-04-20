@@ -25,12 +25,12 @@ export function AccessibilityBar() {
   if (pathname?.startsWith('/menu-board')) return null;
 
   return (
-    <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-b border-gray-200">
+    <div className="flex flex-wrap justify-end items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-gray-50 border-b border-gray-200">
       <button
         id="theme-toggle"
         type="button"
         aria-label="Toggle high contrast mode"
-        className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+        className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
       >
         High Contrast
       </button>

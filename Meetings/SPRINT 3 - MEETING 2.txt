@@ -1,0 +1,88 @@
+SPRINT 3 - MEETING 2
+====================
+Prepared by: Cannon Cavazos
+Meeting Date: 4/19/2026
+
+Attendees
+---------
+Ahmet Asim Aykanat, Cannon Cavazos, Wyatt Voigt, Omer Aslan, Prathinav Allena
+
+Agenda
+------
+1. Discuss power point tasks
+2. Discuss progress on stories
+3. Discuss issue with backend orders table
+
+Accomplishments
+---------------
+- Assigned tasks for power point
+
+Tasks Completed
+---------------
+1. Spin the Wheel Feature — Ahmet                           COMPLETED
+    Implement spin-the-wheel feature.
+
+2. Edit Drinks in Checkout Tab — Omer                       COMPLETED
+    Allow editing drinks during checkout.
+
+13. Employee PIN Feature — Omer                             COMPLETED
+    Add PIN system for employee access.
+
+
+
+Tasks
+-----
+ 1. Menu Item Add/Drop — Cannon
+    Implement functionality to add and remove menu items.
+
+ 2. Text to Speech — Prathinav
+    Add accessibility feature for reading text aloud.
+
+ 3. Backend Update to Restore Item — Ahmet
+    Fix backend to properly restore removed items.
+
+ 4. Weather API — Wyatt
+    Integrate weather API into application.
+
+ 5. Moving Menu Background — Ahmet
+    Add animated background to menu screen.
+
+ 6. Drink Images (Employee/Manager View) — Cannon
+    Add images for drinks in employee and manager interfaces.
+
+ 7. Show Recent Orders — Cannon
+    Display recent orders in system.
+
+ 8. Improved Text Size & Contrast — Prathinav
+    Enhance readability with larger text and better contrast.
+
+ 9. Spin the Wheel Feature — Ahmet                            COMPLETED
+    Implement spin-the-wheel feature.
+
+10. Email Notifications — Omer
+    Send notifications via email.
+
+11. Fix Translation Label Issues — Wyatt
+    Correct missing labels in translation feature.
+
+12. Edit Drinks in Checkout Tab — Omer                       COMPLETED
+    Allow editing drinks during checkout.
+
+13. Employee PIN Feature — Omer                              COMPLETED
+    Add PIN system for employee access.
+
+14. Manager Drink Editing — Cannon
+    Enable drink editing in manager view.
+
+15. Employee Management — Prathinav
+    Implement employee management functionality.
+
+Before Next Meeting
+-------------------
+- Finish assigned tasks for power point
+- Continue working on assigned stories
+Minutes
+-------
+- Divided power point slides for everyone to complete
+- Discussed an issue with the back end orders table: completed vs pending orders
+- Checked finished features and determined that they were all working correctly

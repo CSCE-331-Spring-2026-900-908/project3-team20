@@ -113,14 +113,14 @@ export default function MenuBoardPage() {
                     </div>
 
                     {/* Drink list */}
-                    <div className="flex-1 overflow-y-auto flex flex-col gap-1.5 pr-0.5">
+                    <div className="flex-1 overflow-hidden flex flex-col gap-1">
                       {drinksByCategory[category].map(drink => (
                         <div
                           key={drink.drinkid}
-                          className={`rounded-xl border flex items-center gap-3 px-3 py-2 transition-colors ${cfg.cardBg} ${cfg.border}`}
+                          className={`flex-1 min-h-0 rounded-xl border flex items-center gap-2 px-2 py-1 transition-colors ${cfg.cardBg} ${cfg.border}`}
                         >
                           {/* Small circular image bubble */}
-                          <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm bg-stone-100">
+                          <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm bg-stone-100">
                             {!imgErrors.has(drink.drinkid) ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img

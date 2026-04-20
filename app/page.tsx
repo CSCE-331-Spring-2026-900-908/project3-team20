@@ -207,12 +207,12 @@ export default function Portal() {
             </div>
 
             {/* Global Code Crew*/}
-            <h1 className="mb-2 text-6xl font-bold tracking-tight text-[#2A2A2A] font-['Comic_Sans_MS',_cursive,_sans-serif]" style={{ letterSpacing: "-1px" }}>
+            <h1 className="mb-2 text-6xl font-bold tracking-tight text-[#2A2A2A]" style={{ letterSpacing: "-1px" }}>
               GLOBAL CODE CREW
             </h1>
 
             {/* Bubble Tea & More tagline */}
-            <p className="text-xl text-[#2A2A2A] mb-8 font-['Comic_Sans_MS',_cursive,_sans-serif]">
+            <p className="text-xl text-[#2A2A2A] mb-8">
               BOBA SHOP & MORE
             </p>
           </div>

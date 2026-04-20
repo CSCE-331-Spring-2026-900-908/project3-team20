@@ -70,7 +70,7 @@ export default function MenuBoardPage() {
   }, {});
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f8f3e3] text-[#2A2A2A] flex flex-col font-['Comic_Sans_MS',_cursive,_sans-serif]">
+    <div className="h-screen overflow-hidden bg-[#f8f3e3] text-[#2A2A2A] flex flex-col">
 
       {/* Header */}
       <header className="shrink-0 bg-white border-b border-stone-200 px-6 py-3 flex items-center justify-between shadow-sm">

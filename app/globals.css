@@ -22,14 +22,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Comic Sans MS", cursive, sans-serif;
-}
-
-@font-face {
-  font-family: 'Comic Sans MS';
-  src: local('Comic Sans MS');
-  font-weight: normal;
-  font-style: normal;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Accessibility feature: buttons size */

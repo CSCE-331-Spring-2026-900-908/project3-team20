@@ -174,11 +174,11 @@ export default function CustomerPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Header — always shows the happy hour schedule */}
-        <header className={`border-b px-6 py-4 flex items-center justify-between gap-4 transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
-          <div className="flex items-center gap-3">
+        <header className={`border-b px-3 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center justify-between gap-2 sm:gap-4 transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-white px-3 py-1.5 text-sm font-semibold text-amber-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-amber-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12" />
@@ -186,19 +186,22 @@ export default function CustomerPage() {
               </svg>
               Home
             </Link>
-            <h1 className={`text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
+            <h1 className={`text-lg sm:text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className={`flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full border ${
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border ${
               isHappyHour
                 ? 'bg-amber-900 text-amber-100 border-amber-900 animate-pulse'
                 : 'bg-white text-amber-700 border-amber-300'
             }`}>
               <span>🧋</span>
-              <span>
+              <span className="hidden sm:inline">
                 {isHappyHour
                   ? `Happy Hour — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
                   : `Happy Hour 6–8 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
+              </span>
+              <span className="sm:hidden">
+                {isHappyHour ? `${HAPPY_HOUR_DISCOUNT_PCT}% OFF!` : `HH 6–8 PM`}
               </span>
             </div>
             <ChatToggle />
@@ -207,16 +210,16 @@ export default function CustomerPage() {
 
         {/* Big active banner */}
         {isHappyHour && (
-          <div className="bg-amber-400 border-b border-amber-500 px-6 py-3 text-center">
-            <p className="text-amber-950 font-bold text-lg tracking-wide">
+          <div className="bg-amber-400 border-b border-amber-500 px-3 sm:px-6 py-2 sm:py-3 text-center">
+            <p className="text-amber-950 font-bold text-sm sm:text-lg tracking-wide">
               Happy Hour is ON! All drinks {HAPPY_HOUR_DISCOUNT_PCT}% off until 8 PM
             </p>
-            <p className="text-amber-800 text-sm">Discounted prices shown below</p>
+            <p className="text-amber-800 text-xs sm:text-sm">Discounted prices shown below</p>
           </div>
         )}
 
         {/* Category tabs */}
-        <div className={`flex gap-2 px-6 py-3 border-b overflow-x-auto ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
+        <div className={`flex gap-2 px-3 sm:px-6 py-2 sm:py-3 border-b overflow-x-auto ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
           {categories.map(cat => (
             <button
               key={cat}
@@ -233,8 +236,8 @@ export default function CustomerPage() {
         </div>
 
         {/* Drink grid */}
-        <div className="flex-1 overflow-y-auto p-6 pb-28">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 pb-28">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {filteredDrinks.map(drink => (
               <div
                 key={drink.drinkid}
@@ -291,7 +294,7 @@ export default function CustomerPage() {
       <button
         onClick={() => cart.length > 0 && setCartOpen(true)}
         disabled={cart.length === 0 || undefined}
-        className={`fixed bottom-0 left-0 right-0 z-30 px-6 py-4 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.08)] transition-all ${
+        className={`fixed bottom-0 left-0 right-0 z-30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.08)] transition-all ${
           cart.length === 0
             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
             : isHappyHour
@@ -523,8 +526,8 @@ function CustomizeModal({
   const itemTotal = (drinkCost + toppingCost) * quantity;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] sm:max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
 
         {/* Modal header */}
         <div className={`px-5 py-4 border-b ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
@@ -1010,7 +1013,7 @@ function ChatToggle() {
         AI Chat
       </button>
       {open && (
-        <div data-chat-popup className="fixed top-12 right-4 z-50 w-80 h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
+        <div data-chat-popup className="fixed inset-x-2 bottom-20 top-20 sm:inset-auto sm:top-12 sm:right-4 sm:bottom-auto z-50 sm:w-80 sm:h-[28rem] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
           <div className="px-4 py-3 bg-black text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

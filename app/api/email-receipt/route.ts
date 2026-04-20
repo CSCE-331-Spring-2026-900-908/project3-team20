@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       : 0;
     const discountedSubtotal = Math.max(0, subtotal - wheelDiscountAmt);
     const total = discountedSubtotal + (tip || 0);
-    const waitMinutes = estimateWaitMinutes(total);
+    const waitMinutes = estimateWaitMinutes(discountedSubtotal);
     const html = buildReceiptHtml(items, subtotal, wheelDiscountAmt, tip || 0, total, waitMinutes, orderId, isHappyHour, wheelPrize?.label);
     const subject = `Your boba order — ~${waitMinutes} min wait${orderId != null ? ` (#${orderId})` : ''}`;
 

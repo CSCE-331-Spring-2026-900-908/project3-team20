@@ -83,18 +83,33 @@ export default function CustomerPage() {
     setCart(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  const placeOrder = async (tip: number) => {
+  const placeOrder = async (tip: number, email?: string) => {
     if (cart.length === 0) return;
+    const itemsSnapshot = cart;
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart, tip }),
+        body: JSON.stringify({ items: itemsSnapshot, tip }),
       });
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
         setCart([]);
         setOrderPlaced(true);
         setTimeout(() => setOrderPlaced(false), 3000);
+        if (email) {
+          fetch('/api/email-receipt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              items: itemsSnapshot,
+              tip,
+              orderId: data?.orderId,
+              isHappyHour,
+            }),
+          }).catch(err => console.error('Email receipt failed:', err));
+        }
       }
     } catch (err) {
       console.error('Checkout failed:', err);
@@ -317,7 +332,7 @@ export default function CustomerPage() {
           cart={cart}
           isHappyHour={isHappyHour}
           onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
-          onConfirm={(tip) => { setShowUpsell(false); placeOrder(tip); }}
+          onConfirm={(tip, email) => { setShowUpsell(false); placeOrder(tip, email); }}
           onClose={() => setShowUpsell(false)}
         />
       )}
@@ -542,9 +557,13 @@ function UpsellModal({
   cart: CartItem[];
   isHappyHour: boolean;
   onAddDrink: (drink: Drink) => void;
-  onConfirm: (tipAmount: number) => void;
+  onConfirm: (tipAmount: number, email?: string) => void;
   onClose: () => void;
 }) {
+  const [wantEmail, setWantEmail] = useState(false);
+  const [email, setEmail] = useState('');
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const emailError = wantEmail && email.length > 0 && !emailValid;
   const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
   const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
   const [added, setAdded] = useState<Set<number>>(new Set());
@@ -637,6 +656,34 @@ function UpsellModal({
           </div>
         </div>
 
+        <div className="border-t px-4 py-3">
+          <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+            <input
+              type="checkbox"
+              checked={wantEmail}
+              onChange={e => setWantEmail(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Email me a receipt &amp; estimated wait time
+          </label>
+          {wantEmail && (
+            <>
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className={`mt-2 w-full border rounded-lg px-3 py-2 text-sm ${emailError ? 'border-red-400' : ''}`}
+              />
+              {emailError && (
+                <p className="text-xs text-red-600 mt-1">Please enter a valid email address.</p>
+              )}
+            </>
+          )}
+        </div>
+
         <div className="px-4 pb-4 flex gap-2">
           <button
             onClick={onClose}
@@ -645,8 +692,9 @@ function UpsellModal({
             Keep browsing
           </button>
           <button
-            onClick={() => onConfirm(tipAmount)}
-            className="flex-1 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
+            onClick={() => onConfirm(tipAmount, wantEmail && emailValid ? email.trim() : undefined)}
+            disabled={wantEmail && !emailValid}
+            className="flex-1 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-40"
           >
             Place Order
           </button>

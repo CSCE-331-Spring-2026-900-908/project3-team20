@@ -17,37 +17,43 @@ const pool = new Pool({
  */
 export async function POST(req: NextRequest) {
   try {
-    const { username, password, role } = await req.json();
+    const { username, password, pin, role } = await req.json();
 
-    // Basic validation - username and role are required
-    if (!username || !role) {
+    if (!role) {
       return NextResponse.json(
         { success: false, error: "Missing credentials" },
         { status: 400 }
       );
     }
 
-    // TODO: Replace hardcoded password with hashed password lookup from DB
-    // For now, all employees use the same default password
-    if (password !== "employee") {
+    // Cashier logs in with a PIN equal to their employee ID.
+    // Manager still uses username + shared password.
+    const lookupId = role === "cashier" ? pin : username;
+
+    if (!lookupId) {
+      return NextResponse.json(
+        { success: false, error: "Missing credentials" },
+        { status: 400 }
+      );
+    }
+
+    if (role !== "cashier" && password !== "employee") {
       return NextResponse.json(
         { success: false, error: "Invalid username or password" },
         { status: 401 }
       );
     }
 
-    // Look up the employee by their ID (username == employeeid)
     const client = await pool.connect();
     try {
       const result = await client.query(
         `SELECT * FROM employees WHERE employeeid = $1`,
-        [username]
+        [lookupId]
       );
 
-      // No matching employee found
       if (result.rows.length === 0) {
         return NextResponse.json(
-          { success: false, error: "Invalid username or password" },
+          { success: false, error: role === "cashier" ? "Invalid PIN" : "Invalid username or password" },
           { status: 401 }
         );
       }

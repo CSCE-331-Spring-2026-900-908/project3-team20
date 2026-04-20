@@ -50,9 +50,12 @@ interface LoginModalProps {
 function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const isCashier = targetRole === "cashier";
 
   if (!isOpen) return null;
 
@@ -62,10 +65,13 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
     setLoading(true);
 
     try {
+      const body = isCashier
+        ? { pin, role: targetRole }
+        : { username, password, role: targetRole };
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, role: targetRole }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -103,33 +109,54 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-stone-700">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-              required
-            />
-          </div>
+          {isCashier ? (
+            <div>
+              <label htmlFor="pin" className="block text-sm font-medium text-stone-700">
+                PIN
+              </label>
+              <input
+                id="pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                required
+                autoFocus
+              />
+            </div>
+          ) : (
+            <>
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-stone-700">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                  required
+                />
+              </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-stone-700">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-              required
-            />
-          </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-stone-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                  required
+                />
+              </div>
+            </>
+          )}
 
           {error && (
             <p className="text-sm text-red-600">{error}</p>

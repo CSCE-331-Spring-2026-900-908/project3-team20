@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { TranslationProvider } from "./context/TranslationContext";
-import { TranslateButton } from "./components/TranslateButton";
 import { ButtonSizeProvider } from "./context/ButtonSizeContext";
-import { ButtonSizeToggle } from "./components/ButtonSizeToggle";
+import { AccessibilityBar } from "./components/AccessibilityBar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,19 +23,6 @@ const themeInitScript = `
     if (localStorage.getItem(key) === "dark") {
       root.classList.add("dark-mode");
     }
-  })();
-`;
-
-const themeToggleScript = `
-  (() => {
-    const key = "color-mode";
-    const root = document.documentElement;
-    const button = document.getElementById("theme-toggle");
-    button?.addEventListener("click", () => {
-      const isDark = root.classList.toggle("dark-mode");
-      localStorage.setItem(key, isDark ? "dark" : "light");
-      button.setAttribute("aria-pressed", String(isDark));
-    });
   })();
 `;
 
@@ -61,27 +47,15 @@ export default function RootLayout({
           {themeInitScript}
         </Script>
       </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="h-screen flex flex-col overflow-hidden" suppressHydrationWarning>
         <ButtonSizeProvider>
           <TranslationProvider>
-            <header className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-b border-gray-200">
-              <button
-                id="theme-toggle"
-                type="button"
-                aria-label="Toggle color mode"
-                className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-              >
-                Dark Mode
-              </button>
-              <ButtonSizeToggle />
-              <TranslateButton />
-            </header>
-            {children}
+            <AccessibilityBar />
+            <div className="flex-1 min-h-0 overflow-auto">
+              {children}
+            </div>
           </TranslationProvider>
         </ButtonSizeProvider>
-        <Script id="theme-toggle-script" strategy="afterInteractive">
-          {themeToggleScript}
-        </Script>
       </body>
     </html>
   );

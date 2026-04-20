@@ -297,7 +297,7 @@ export default function ManagerPage() {
   const visibleToppings = toppings.filter(top => top.name.trim().toLowerCase() !== 'hot');
 
   return (
-    <main className="min-h-screen bg-gray-50 text-black">
+    <main className="min-h-full bg-gray-50 text-black">
       <Link
         href="/"
         className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"

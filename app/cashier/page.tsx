@@ -117,7 +117,7 @@ export default function CashierPage() {
         : drinks.filter(d => (d.category || 'Other') === selectedCategory);
 
     return (
-        <div className="flex h-screen bg-white text-black">
+        <div className="flex h-full bg-white text-black">
             <Link
                 href="/"
                 className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"

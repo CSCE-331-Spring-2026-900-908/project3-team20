@@ -173,8 +173,8 @@ export default function Portal() {
 
   return (
     <>
-      <main className="min-h-screen bg-[#f8f3e3] text-stone-900 flex flex-col items-center justify-center">
-        <section className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-12">
+      <main className="min-h-full bg-[#f8f3e3] text-stone-900 flex flex-col items-center justify-center">
+        <section className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-center px-6 py-12">
           <div className="mb-12 text-center">
             {/* Boba cup logo */}
             <div className="mx-auto mb-6 w-32 h-52">

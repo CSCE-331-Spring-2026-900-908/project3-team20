@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest) {
       [trimmedName, parsedRole, parsedEmployeeId]
     );
 
-    if (result.rowCount === 0) {
+    if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
@@ -94,7 +94,7 @@ export async function DELETE(request: NextRequest) {
     const employeeCount = Number(employeeCountResult.rows[0]?.count ?? 0);
     const orderCount = Number(orderCountResult.rows[0]?.count ?? 0);
 
-    if (employeeResult.rowCount === 0) {
+    if (employeeResult.rows.length === 0) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { PoolClient } from 'pg';
 import pool from '@/lib/db';
 import { CartItem, DrinkCustomization } from '@/types';
 import { isHappyHour, applyHappyHourDiscount } from '@/lib/happyHour';
@@ -30,7 +31,7 @@ function getCustomizationInventoryUsage(customization: DrinkCustomization) {
   ].filter(item => item.amount > 0);
 }
 
-async function resolveEmployeeId(client: Awaited<ReturnType<typeof pool.connect>>, employeeId?: number | string | null) {
+async function resolveEmployeeId(client: PoolClient, employeeId?: number | string | null) {
   const parsedEmployeeId = Number(employeeId);
 
   if (Number.isInteger(parsedEmployeeId) && parsedEmployeeId > 0) {
@@ -39,7 +40,7 @@ async function resolveEmployeeId(client: Awaited<ReturnType<typeof pool.connect>
       [parsedEmployeeId]
     );
 
-    if (employeeRes.rowCount > 0) {
+    if (employeeRes.rows.length > 0) {
       return parsedEmployeeId;
     }
   }
@@ -48,7 +49,7 @@ async function resolveEmployeeId(client: Awaited<ReturnType<typeof pool.connect>
     'SELECT employeeid FROM employees ORDER BY employeeid LIMIT 1'
   );
 
-  return fallbackRes.rowCount > 0 ? Number(fallbackRes.rows[0].employeeid) : null;
+  return fallbackRes.rows.length > 0 ? Number(fallbackRes.rows[0].employeeid) : null;
 }
 
 export async function POST(request: Request) {

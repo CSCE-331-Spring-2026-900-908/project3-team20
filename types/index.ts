@@ -39,6 +39,12 @@ export interface MiscItem {
   totalquantity: number;
 }
 
+export interface Employee {
+  employeeid: number;
+  name: string;
+  role: boolean;
+}
+
 export interface CartItem {
   drink: Drink;
   quantity: number;

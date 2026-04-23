@@ -4,7 +4,6 @@ import { CartItem, DrinkCustomization } from '@/types';
 import { isHappyHour, applyHappyHourDiscount } from '@/lib/happyHour';
 import { getChicagoDate, getChicagoHour } from '@/lib/time';
 
-const KIOSK_EMPLOYEE_ID = 1;
 const SWEETNESS_TO_SUGAR_USAGE: Record<DrinkCustomization['sweetness'], number> = {
   '0%': 0,
   '25%': 1,
@@ -31,6 +30,27 @@ function getCustomizationInventoryUsage(customization: DrinkCustomization) {
   ].filter(item => item.amount > 0);
 }
 
+async function resolveEmployeeId(client: Awaited<ReturnType<typeof pool.connect>>, employeeId?: number | string | null) {
+  const parsedEmployeeId = Number(employeeId);
+
+  if (Number.isInteger(parsedEmployeeId) && parsedEmployeeId > 0) {
+    const employeeRes = await client.query(
+      'SELECT employeeid FROM employees WHERE employeeid = $1',
+      [parsedEmployeeId]
+    );
+
+    if (employeeRes.rowCount > 0) {
+      return parsedEmployeeId;
+    }
+  }
+
+  const fallbackRes = await client.query(
+    'SELECT employeeid FROM employees ORDER BY employeeid LIMIT 1'
+  );
+
+  return fallbackRes.rowCount > 0 ? Number(fallbackRes.rows[0].employeeid) : null;
+}
+
 export async function POST(request: Request) {
   const client = await pool.connect();
   try {
@@ -43,9 +63,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No items in order' }, { status: 400 });
     }
 
-    const resolvedEmployeeId = Number.isFinite(Number(employeeId))
-      ? Number(employeeId)
-      : KIOSK_EMPLOYEE_ID;
+    const resolvedEmployeeId = await resolveEmployeeId(client, employeeId);
+
+    if (!resolvedEmployeeId) {
+      return NextResponse.json(
+        { error: 'No employees are available to assign this order' },
+        { status: 400 }
+      );
+    }
+
     const now = new Date();
     const dateStr = getChicagoDate(now);
     const hour = getChicagoHour(now);

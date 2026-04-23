@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
+import EmployeeManager from '@/app/components/EmployeeManager';
 
 type Drink = {
   drinkid: number;
@@ -17,6 +18,7 @@ type RecipeRow = {
 };
 
 type AddType = 'ingredient' | 'topping' | 'misc';
+type ManagerView = 'inventory' | 'menu' | 'employees' | 'reports';
 type ReportRow = Record<string, string | number>;
 
 function ReportTable({
@@ -116,7 +118,7 @@ export default function ManagerPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [miscItems, setMiscItems] = useState<MiscItem[]>([]);
-  const [view, setView] = useState<'inventory' | 'menu' | 'reports'>('inventory');
+  const [view, setView] = useState<ManagerView>('inventory');
   const [showXReport, setShowXReport] = useState(false);
   const [showCustomReport, setShowCustomReport] = useState(false);
   const [xReportData, setXReportData] = useState<XReportData | null>(null);
@@ -199,10 +201,6 @@ export default function ManagerPage() {
     setCustomReportData(data);
     setCustomReportLoading(false);
   };
-
-  useEffect(() => {
-    if (view === 'reports' && !reportsLoaded) fetchReports();
-  }, [view]);
 
   // Add dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -359,6 +357,12 @@ export default function ManagerPage() {
 
   const costLabel = addType === 'ingredient' ? 'Cost' : 'Price';
   const visibleToppings = toppings.filter(top => top.name.trim().toLowerCase() !== 'hot');
+  const handleViewChange = (nextView: ManagerView) => {
+    setView(nextView);
+    if (nextView === 'reports' && !reportsLoaded) {
+      void fetchReports();
+    }
+  };
 
   return (
     <main className="min-h-full bg-gray-50 text-black">
@@ -374,10 +378,10 @@ export default function ManagerPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Manager</h1>
           <div className="flex gap-1">
-            {(['inventory', 'menu', 'reports'] as const).map(v => (
+            {(['inventory', 'menu', 'employees', 'reports'] as const).map(v => (
               <button
                 key={v}
-                onClick={() => setView(v)}
+                onClick={() => handleViewChange(v)}
                 className={`px-4 py-1.5 rounded-full text-sm border transition-colors capitalize ${
                   view === v ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-300 hover:bg-gray-100'
                 }`}
@@ -561,6 +565,7 @@ export default function ManagerPage() {
           </section>
         </div>
       )}
+      {view === 'employees' && <EmployeeManager />}
       {view === 'reports' && (
         <div className="p-6 space-y-4">
           <div className="flex justify-end">

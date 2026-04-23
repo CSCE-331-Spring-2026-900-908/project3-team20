@@ -4,6 +4,18 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
 
+type Drink = {
+  drinkid: number;
+  name: string;
+  cost: number;
+  category: string;
+};
+
+type RecipeRow = {
+  ingredientid: number;
+  amount: number;
+};
+
 type AddType = 'ingredient' | 'topping' | 'misc';
 type ReportRow = Record<string, string | number>;
 
@@ -104,7 +116,7 @@ export default function ManagerPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [miscItems, setMiscItems] = useState<MiscItem[]>([]);
-  const [view, setView] = useState<'inventory' | 'reports'>('inventory');
+  const [view, setView] = useState<'inventory' | 'menu' | 'reports'>('inventory');
   const [showXReport, setShowXReport] = useState(false);
   const [showCustomReport, setShowCustomReport] = useState(false);
   const [xReportData, setXReportData] = useState<XReportData | null>(null);
@@ -136,6 +148,15 @@ export default function ManagerPage() {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [customReportError, setCustomReportError] = useState('');
+
+  const [drinks, setDrinks] = useState<Drink[]>([]);
+  const [showAddDrinkDialog, setShowAddDrinkDialog] = useState(false);
+  const [addDrinkName, setAddDrinkName] = useState('');
+  const [addDrinkCost, setAddDrinkCost] = useState('');
+  const [addDrinkError, setAddDrinkError] = useState('');
+  const [deleteDrinkTarget, setDeleteDrinkTarget] = useState<Drink | null>(null);
+  const [recipeRows, setRecipeRows] = useState<RecipeRow[]>([{ ingredientid: 0, amount: 0 }]);
+
 
   const fetchReports = async () => {
     setReportsLoading(true);
@@ -213,7 +234,50 @@ export default function ManagerPage() {
     fetch('/api/misc').then(r => r.json()).then(d => { if (Array.isArray(d)) setMiscItems(d); });
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  const fetchDrinks = () => {
+    fetch('/api/drinks').then(r => r.json()).then(d => { if (Array.isArray(d)) setDrinks(d); });
+  };
+
+  useEffect(() => { fetchAll(); fetchDrinks(); }, []);
+
+
+
+  const handleAddDrink = async () => {
+    if (!addDrinkName.trim()) { setAddDrinkError('Name cannot be empty.'); return; }
+    const costVal = parseFloat(addDrinkCost);
+    if (isNaN(costVal) || costVal < 0) { setAddDrinkError('Cost must be a valid non-negative number.'); return; }
+    if (recipeRows.some(r => r.ingredientid === 0 || r.amount <= 0)) {
+      setAddDrinkError('All recipe rows must have an ingredient and amount greater than 0.');
+      return;
+    }
+
+    const res = await fetch('/api/drinks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: addDrinkName.trim(),
+        cost: costVal,
+        recipes: recipeRows,
+      }),
+    });
+    if (!res.ok) { setAddDrinkError('Failed to add drink.'); return; }
+    setShowAddDrinkDialog(false);
+    setAddDrinkName('');
+    setAddDrinkCost('');
+    setRecipeRows([{ ingredientid: 0, amount: 0 }]);
+    fetchDrinks();
+  };
+
+  const handleDeleteDrink = async () => {
+    if (!deleteDrinkTarget) return;
+    await fetch('/api/drinks', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ drinkid: deleteDrinkTarget.drinkid }),
+    });
+    setDeleteDrinkTarget(null);
+    fetchDrinks();
+  };
 
   const openAdd = (type: AddType) => {
     setAddType(type);
@@ -310,7 +374,7 @@ export default function ManagerPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Manager</h1>
           <div className="flex gap-1">
-            {(['inventory', 'reports'] as const).map(v => (
+            {(['inventory', 'menu', 'reports'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -338,6 +402,14 @@ export default function ManagerPage() {
               Add Misc
             </button>
           </div>
+        )}
+        {view === 'menu' && (
+          <button
+            onClick={() => { setAddDrinkName(''); setAddDrinkCost(''); setAddDrinkError(''); setShowAddDrinkDialog(true); }}
+            className="px-4 py-2 text-sm rounded bg-rose-500 text-white hover:bg-rose-600"
+          >
+            Add Drink
+          </button>
         )}
         {view === 'reports' && (
           <div className="flex gap-2">
@@ -464,6 +536,31 @@ export default function ManagerPage() {
           </section>
         </div>
       )}
+      {view === 'menu' && (
+        <div className="p-6 space-y-8">
+          <section>
+            <h2 className="text-lg font-bold mb-3">Menu</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {drinks.map(drink => (
+                <div
+                  key={drink.drinkid}
+                  className="rounded-lg border-2 border-rose-400 p-4 flex flex-col gap-1 group relative bg-white hover:shadow-md transition"
+                >
+                  <span className="font-bold text-sm">{drink.name}</span>
+                  <span className="text-gray-600 text-xs">Cost: ${Number(drink.cost).toFixed(2)}</span>
+                  <button
+                    onClick={() => setDeleteDrinkTarget(drink)}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
+                    title="Delete"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
       {view === 'reports' && (
         <div className="p-6 space-y-4">
           <div className="flex justify-end">
@@ -512,7 +609,89 @@ export default function ManagerPage() {
           </div>
         </div>
       )}
-
+      {showAddDrinkDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-4">Add Drink</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" value={addDrinkName} onChange={e => setAddDrinkName(e.target.value)}
+                  placeholder="drink name" className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+                <input type="text" value={addDrinkCost} onChange={e => setAddDrinkCost(e.target.value)}
+                  placeholder="0.00" className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>
+                <div className="space-y-2">
+                  {recipeRows.map((row, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select
+                        value={row.ingredientid}
+                        onChange={e => {
+                          const updated = [...recipeRows];
+                          updated[i].ingredientid = parseInt(e.target.value);
+                          setRecipeRows(updated);
+                        }}
+                        className="flex-1 border rounded px-2 py-1.5 text-sm"
+                      >
+                        <option value={0}>Select ingredient</option>
+                        {ingredients.map(ing => (
+                          <option key={ing.ingredientid} value={ing.ingredientid}>{ing.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="amount"
+                        value={row.amount || ''}
+                        onChange={e => {
+                          const updated = [...recipeRows];
+                          updated[i].amount = parseFloat(e.target.value) || 0;
+                          setRecipeRows(updated);
+                        }}
+                        className="w-20 border rounded px-2 py-1.5 text-sm"
+                      />
+                      <button
+                        onClick={() => setRecipeRows(recipeRows.filter((_, j) => j !== i))}
+                        className="text-red-400 hover:text-red-600 text-lg leading-none"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setRecipeRows([...recipeRows, { ingredientid: 0, amount: 0 }])}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    + Add ingredient
+                  </button>
+                </div>
+              </div>
+              {addDrinkError && <p className="text-red-500 text-sm">{addDrinkError}</p>}
+            </div>
+            <div className="flex justify-end gap-2 mt-5">
+              <button onClick={() => setShowAddDrinkDialog(false)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddDrink} className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Add</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteDrinkTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-2">Delete Drink</h3>
+            <p className="text-sm text-gray-600 mb-5">Are you sure you want to delete <strong>{deleteDrinkTarget.name}</strong>?</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setDeleteDrinkTarget(null)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleDeleteDrink} className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Dialog */}
       {showAddDialog && (

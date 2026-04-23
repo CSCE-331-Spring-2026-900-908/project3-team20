@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
 import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
+import WeatherWidget from '../components/WeatherWidget';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
   hot: 'No',
@@ -204,6 +205,7 @@ export default function CustomerPage() {
                 {isHappyHour ? `${HAPPY_HOUR_DISCOUNT_PCT}% OFF!` : `HH 6–8 PM`}
               </span>
             </div>
+            <WeatherWidget />
             <ChatToggle />
           </div>
         </header>

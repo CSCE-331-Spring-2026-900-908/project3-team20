@@ -190,10 +190,6 @@ export default function EmployeeManager() {
       <section className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Employee Management</h2>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Add new employees, update names or permissions, and remove employees who no longer need access.
-            Cashiers use their employee ID as a PIN, and managers use the same ID as their username.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -227,7 +223,6 @@ export default function EmployeeManager() {
           { label: 'Total Employees', value: employees.length, accent: 'border-gray-300' },
           { label: 'Managers', value: managerCount, accent: 'border-blue-300' },
           { label: 'Cashiers', value: cashierCount, accent: 'border-amber-300' },
-          { label: 'Next Suggested ID', value: nextEmployeeId, accent: 'border-emerald-300' },
         ].map(card => (
           <div
             key={card.label}

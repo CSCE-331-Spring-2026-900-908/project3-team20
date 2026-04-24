@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 // The four portal sections available on the home page
@@ -48,72 +48,115 @@ interface LoginModalProps {
  * Collects username/password and sends them to /api/login.
  */
 function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [pin, setPin] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [pinError, setPinError] = useState("");
+  const [pinLoading, setPinLoading] = useState(false);
+
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState("");
   const router = useRouter();
 
+  const isManager = targetRole === "manager";
   const isCashier = targetRole === "cashier";
 
-  if (!isOpen) return null;
+  // Load Google Identity Services script and initialize GIS when manager modal opens
+  useEffect(() => {
+    if (!isManager) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || clientId === "your-client-id.apps.googleusercontent.com") return;
+
+    const initGIS = () => {
+      if (typeof google === "undefined" || !google.accounts) return;
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: { credential?: string }) => {
+          if (!response.credential) return;
+          setGoogleLoading(true);
+          setGoogleError("");
+          fetch("/api/login/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ googleToken: response.credential }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                localStorage.setItem("employeeId", data.id);
+                localStorage.setItem("employeeName", data.name);
+                router.push(targetHref);
+              } else {
+                setGoogleError(data.error || "Google sign-in failed");
+              }
+            })
+            .catch(() => setGoogleError("Connection error. Please try again."))
+            .finally(() => setGoogleLoading(false));
+        },
+      });
+      const container = document.getElementById("gis-container");
+      if (container) {
+        google.accounts.id.renderButton(container, {
+          theme: "filled_black",
+          size: "large",
+          shape: "rectangular",
+          text: "signin_with",
+        });
+      }
+    };
+
+    if (document.getElementById("gis-script")) {
+      initGIS();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "gis-script";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGIS;
+    document.head.appendChild(script);
+  }, [isManager, targetHref]);
+
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
+    setPinError("");
+    setPinLoading(true);
     try {
-      const body = isCashier
-        ? { pin, role: targetRole }
-        : { username, password, role: targetRole };
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ pin, role: targetRole }),
       });
-
       const data = await res.json();
-
       if (res.ok && data.success) {
         localStorage.setItem("employeeId", data.id);
         localStorage.setItem("employeeName", data.name);
-        // Redirect to the requested page on successful login
         router.push(targetHref);
       } else {
-        // Show error returned from the server
-        setError(data.error || "Invalid credentials");
+        setPinError(data.error || "Invalid credentials");
       }
     } catch {
-      // Network error - server unreachable
-      setError("Connection error. Please try again.");
+      setPinError("Connection error. Please try again.");
     } finally {
-      setLoading(false);
+      setPinLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-stone-900">
-            {targetRole === "manager" ? "Manager" : "Cashier"} Login
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-2xl text-stone-400 hover:text-stone-600"
-          >
-            ×
-          </button>
-        </div>
+  if (!isOpen) return null;
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isCashier ? (
+  // ---- CASHIER: single centered card (unchanged layout from before) ----
+  if (isCashier) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-stone-900">Cashier Login</h2>
+            <button onClick={onClose} className="text-2xl text-stone-400 hover:text-stone-600">×</button>
+          </div>
+          <form onSubmit={handlePinSubmit} className="space-y-4">
             <div>
-              <label htmlFor="pin" className="block text-sm font-medium text-stone-700">
-                PIN
-              </label>
+              <label htmlFor="pin" className="block text-sm font-medium text-stone-700">PIN</label>
               <input
                 id="pin"
                 type="password"
@@ -122,57 +165,80 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-                required
-                autoFocus
+                required autoFocus
               />
             </div>
-          ) : (
-            <>
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-stone-700">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-stone-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
+            {pinError && <p className="text-sm text-red-600">{pinError}</p>}
+            <button
+              type="submit"
+              disabled={pinLoading}
+              className="w-full rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
+            >
+              {pinLoading ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // ---- MANAGER: two side-by-side cards ----
+  if (isManager) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-2xl">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-stone-900">Manager Login</h2>
+            <button onClick={onClose} className="text-2xl text-stone-400 hover:text-stone-600">×</button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Left card — PIN Login */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-6">
+              <h3 className="text-lg font-semibold text-stone-800 mb-4">Sign in with PIN</h3>
+              <form onSubmit={handlePinSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="manager-pin" className="block text-sm font-medium text-stone-700">
+                    Employee ID (PIN)
+                  </label>
+                  <input
+                    id="manager-pin"
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                    required autoFocus
+                  />
+                </div>
+                {pinError && <p className="text-sm text-red-600">{pinError}</p>}
+                <button
+                  type="submit"
+                  disabled={pinLoading}
+                  className="w-full rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
+                >
+                  {pinLoading ? "Signing in..." : "Sign In"}
+                </button>
+              </form>
+            </div>
+
+            {/* Right card — Google Sign-In */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-6 flex flex-col items-center justify-center">
+              <h3 className="text-lg font-semibold text-stone-800 mb-4">Sign in with Google</h3>
+              <p className="text-sm text-stone-500 mb-4 text-center">
+                Use your <strong>@tamu.edu</strong> account or <strong>reveille.bubbletea@gmail.com</strong>
+              </p>
+              <div id="gis-container" className="flex items-center justify-center" />
+              {googleLoading && <p className="text-sm text-stone-400 mt-3">Redirecting...</p>}
+              {googleError && <p className="text-sm text-red-600 mt-3">{googleError}</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /**

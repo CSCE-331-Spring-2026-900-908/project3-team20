@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Google Identity Services global exposed by the GIS script
+declare const google: {
+  accounts: {
+    id: {
+      initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void;
+      renderButton: (element: HTMLElement, config: object) => void;
+    };
+  };
+};
+
 // The four portal sections available on the home page
 const portalLinks = [
   {

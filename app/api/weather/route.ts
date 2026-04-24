@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const OPENWEATHER_API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const DEFAULT_LOCATION = process.env.NEXT_PUBLIC_WEATHER_LOCATION || 'College Station';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 

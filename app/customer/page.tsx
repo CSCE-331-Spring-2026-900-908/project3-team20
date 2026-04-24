@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
 import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
+import { useTextToSpeech } from '@/lib/useTextToSpeech';
+import { SpeakButton } from '../components/SpeakButton';
 import WeatherWidget from '../components/WeatherWidget';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
@@ -18,6 +20,101 @@ const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
 type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
 const HIDDEN_CUSTOMIZATION_TOPPINGS = new Set(['hot', 'sugar', 'ice']);
 const DISCOUNT = 1 - HAPPY_HOUR_DISCOUNT_PCT / 100; // e.g. 0.80 for 20% off
+
+function formatCurrency(amount: number) {
+  return `$${amount.toFixed(2)}`;
+}
+
+function buildDrinkAnnouncement(drink: Drink, isHappyHour: boolean) {
+  const regularPrice = Number(drink.cost);
+  const currentPrice = isHappyHour ? regularPrice * DISCOUNT : regularPrice;
+  const categoryText = drink.category ? `${drink.category}. ` : '';
+  const priceText = isHappyHour
+    ? `Happy hour price ${formatCurrency(currentPrice)}, reduced from ${formatCurrency(regularPrice)}.`
+    : `Price ${formatCurrency(currentPrice)}.`;
+
+  return `${drink.name}. ${categoryText}${priceText} Use the plus button to customize it and add it to your order.`;
+}
+
+function buildCustomizationAnnouncement(
+  drink: Drink,
+  isHappyHour: boolean,
+  selectableToppings: Topping[]
+) {
+  const regularPrice = Number(drink.cost);
+  const currentPrice = isHappyHour ? regularPrice * DISCOUNT : regularPrice;
+  const priceText = isHappyHour
+    ? `${drink.name}. Happy hour price ${formatCurrency(currentPrice)}, regular price ${formatCurrency(regularPrice)}.`
+    : `${drink.name}. Price ${formatCurrency(currentPrice)}.`;
+  const sweetnessText = `Sweetness options are ${SWEETNESS_OPTIONS.join(', ')}.`;
+  const iceText = `Ice options are ${ICE_OPTIONS.join(', ')}. If you choose hot, ice will automatically be set to none.`;
+  const toppingsText = selectableToppings.length > 0
+    ? `Available toppings are ${selectableToppings.map((topping) => `${topping.name} for ${formatCurrency(Number(topping.price))}`).join(', ')}.`
+    : 'There are no extra toppings available for this drink.';
+
+  return `${priceText} Quantity can be changed before adding to your order. Hot drink options are ${HOT_OPTIONS.join(' or ')}. ${sweetnessText} ${iceText} ${toppingsText}`;
+}
+
+function buildFullMenuSections(
+  drinks: Drink[],
+  isHappyHour: boolean,
+  cartCount: number,
+  cartTotal: number
+) {
+  if (drinks.length === 0) {
+    return ['The menu is still loading. Please wait a moment, then try listening again.'];
+  }
+
+  const drinksByCategory = new Map<string, Drink[]>();
+  drinks.forEach((drink) => {
+    const category = drink.category || 'Other';
+    const existing = drinksByCategory.get(category);
+    if (existing) existing.push(drink);
+    else drinksByCategory.set(category, [drink]);
+  });
+
+  const intro = isHappyHour
+    ? `Welcome to the customer kiosk. Happy hour is active, so all drinks are ${HAPPY_HOUR_DISCOUNT_PCT} percent off right now. I will read the full menu by category.`
+    : 'Welcome to the customer kiosk. I will read the full menu by category.';
+
+  const categorySections = Array.from(drinksByCategory.entries()).map(([category, categoryDrinks]) => {
+    const itemDescriptions = categoryDrinks
+      .map((drink) => {
+        const regularPrice = Number(drink.cost);
+        if (isHappyHour) {
+          return `${drink.name}, happy hour price ${formatCurrency(regularPrice * DISCOUNT)}, regular price ${formatCurrency(regularPrice)}.`;
+        }
+
+        return `${drink.name}, ${formatCurrency(regularPrice)}.`;
+      })
+      .join(' ');
+
+    return `${category}. ${categoryDrinks.length} ${categoryDrinks.length === 1 ? 'drink' : 'drinks'}. ${itemDescriptions}`;
+  });
+
+  const cartSection = cartCount > 0
+    ? `Your cart currently has ${cartCount} ${cartCount === 1 ? 'item' : 'items'} totaling ${formatCurrency(cartTotal)}.`
+    : 'Your cart is currently empty.';
+
+  return [
+    intro,
+    ...categorySections,
+    cartSection,
+    'Use the plus button next to any drink to customize it and add it to your order. Speaker buttons on each drink can also replay individual item details.',
+  ];
+}
+
+function buildCartItemAnnouncement(item: CartItem, isHappyHour: boolean) {
+  const temperatureText = item.customization.hot === 'Yes'
+    ? 'served hot with no ice'
+    : `served cold with ${item.customization.ice.toLowerCase()} ice`;
+  const toppingsText = item.toppings.length > 0
+    ? `Toppings: ${item.toppings.map((t) => `${t.amount} ${t.name}`).join(', ')}.`
+    : 'No extra toppings.';
+  const linePrice = isHappyHour ? lineTotalDiscounted(item, DISCOUNT) : lineTotal(item);
+
+  return `${item.drink.name}, quantity ${item.quantity}. ${temperatureText}, ${item.customization.sweetness} sweetness. ${toppingsText} Line total ${formatCurrency(linePrice)}.`;
+}
 
 // ─── Spin the Wheel ───────────────────────────────────────────────────────────
 
@@ -96,6 +193,38 @@ export default function CustomerPage() {
   const cartFullPrice = cart.reduce((sum, item) => sum + lineTotal(item), 0);
   const cartSavings = cartFullPrice - cartTotal;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { supported: textToSpeechSupported, speaking, speak, speakSequence, stop } = useTextToSpeech();
+
+  const speakFullMenu = useCallback(() => {
+    speakSequence(buildFullMenuSections(drinks, isHappyHour, cartCount, cartTotal));
+  }, [cartCount, cartTotal, drinks, isHappyHour, speakSequence]);
+
+  const speakOrderSummary = useCallback(() => {
+    if (cart.length === 0) {
+      speak('Your cart is empty. Add a drink to start your order.');
+      return;
+    }
+
+    const sampleItems = cart
+      .slice(0, 3)
+      .map((item) => `${item.quantity} ${item.drink.name}`)
+      .join(', ');
+    const savingsText = isHappyHour && cartSavings > 0
+      ? `You are saving ${formatCurrency(cartSavings)} during happy hour.`
+      : '';
+
+    speak(
+      `Your order has ${cartCount} ${cartCount === 1 ? 'item' : 'items'}. ${sampleItems ? `Items include ${sampleItems}. ` : ''}Total is ${formatCurrency(cartTotal)}. Payment method is ${paymentMethod}. ${savingsText}`
+    );
+  }, [cart, cartCount, cartSavings, cartTotal, isHappyHour, paymentMethod, speak]);
+
+  const speakDrink = useCallback((drink: Drink) => {
+    speak(buildDrinkAnnouncement(drink, isHappyHour));
+  }, [isHappyHour, speak]);
+
+  const speakCartItem = useCallback((item: CartItem) => {
+    speak(buildCartItemAnnouncement(item, isHappyHour));
+  }, [isHappyHour, speak]);
 
   const addToCart = useCallback((
     drink: Drink,
@@ -190,6 +319,25 @@ export default function CustomerPage() {
             <h1 className={`text-lg sm:text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {textToSpeechSupported && (
+              <>
+                <SpeakButton
+                  label="Read Full Menu"
+                  onClick={speakFullMenu}
+                  aria-label="Read the full kiosk menu aloud"
+                  className="px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm"
+                />
+                {speaking && (
+                  <button
+                    type="button"
+                    onClick={stop}
+                    className="rounded-lg border border-stone-300 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium text-stone-700 shadow-sm transition hover:bg-stone-50"
+                  >
+                    Stop Audio
+                  </button>
+                )}
+              </>
+            )}
             <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border ${
               isHappyHour
                 ? 'bg-amber-900 text-amber-100 border-amber-900 animate-pulse'
@@ -266,14 +414,26 @@ export default function CustomerPage() {
                       <span className="text-gray-600">${Number(drink.cost).toFixed(2)}</span>
                     )}
                   </div>
-                  <button
-                    onClick={() => setCustomizing(drink)}
-                    className={`drink-add-btn w-8 h-8 rounded-full text-white text-lg flex items-center justify-center ${
-                      isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'
-                    }`}
-                  >
-                    +
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {textToSpeechSupported && (
+                      <SpeakButton
+                        compact
+                        label={`Hear details for ${drink.name}`}
+                        aria-label={`Hear details for ${drink.name}`}
+                        onClick={() => speakDrink(drink)}
+                        className="h-9 w-9"
+                      />
+                    )}
+                    <button
+                      onClick={() => setCustomizing(drink)}
+                      aria-label={`Customize and add ${drink.name}`}
+                      className={`drink-add-btn w-8 h-8 rounded-full text-white text-lg flex items-center justify-center ${
+                        isHappyHour ? 'bg-amber-700 hover:bg-amber-800' : 'bg-black hover:bg-gray-800'
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -325,16 +485,27 @@ export default function CustomerPage() {
       >
         <div className={`px-5 pt-5 pb-3 border-b flex items-center justify-between ${isHappyHour ? 'border-amber-300' : ''}`}>
           <h2 className="text-xl font-bold">Your Order</h2>
-          <button
-            onClick={() => setCartOpen(false)}
-            aria-label="Close cart"
-            className="w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {textToSpeechSupported && (
+              <SpeakButton
+                compact
+                label="Hear order summary"
+                aria-label="Hear order summary"
+                onClick={speakOrderSummary}
+                className="h-9 w-9"
+              />
+            )}
+            <button
+              onClick={() => setCartOpen(false)}
+              aria-label="Close cart"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
@@ -348,6 +519,15 @@ export default function CustomerPage() {
                   <p className="font-medium">{item.drink.name} x{item.quantity}</p>
                 </div>
                 <div className="flex gap-1 items-center">
+                  {textToSpeechSupported && (
+                    <SpeakButton
+                      compact
+                      label={`Hear details for ${item.drink.name}`}
+                      aria-label={`Hear details for ${item.drink.name}`}
+                      onClick={() => speakCartItem(item)}
+                      className="h-9 w-9"
+                    />
+                  )}
                   <button
                     onClick={() => editItem(i)}
                     aria-label="Edit item"
@@ -442,6 +622,8 @@ export default function CustomerPage() {
           initialQuantity={editingIndex !== null ? cart[editingIndex].quantity : 1}
           initialToppings={editingIndex !== null ? cart[editingIndex].toppings : []}
           initialCustomization={editingIndex !== null ? cart[editingIndex].customization : DEFAULT_CUSTOMIZATION}
+          canSpeak={textToSpeechSupported}
+          onSpeakDetails={speak}
         />
       )}
 
@@ -482,6 +664,8 @@ function CustomizeModal({
   initialQuantity = 1,
   initialToppings = [],
   initialCustomization = DEFAULT_CUSTOMIZATION,
+  canSpeak = false,
+  onSpeakDetails,
 }: {
   drink: Drink;
   toppings: Topping[];
@@ -491,6 +675,8 @@ function CustomizeModal({
   initialQuantity?: number;
   initialToppings?: CartItemTopping[];
   initialCustomization?: DrinkCustomization;
+  canSpeak?: boolean;
+  onSpeakDetails?: (message: string) => unknown;
 }) {
   const selectableToppings = toppings.filter(
     topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
@@ -526,6 +712,7 @@ function CustomizeModal({
   );
   const drinkCost = isHappyHour ? Number(drink.cost) * DISCOUNT : Number(drink.cost);
   const itemTotal = (drinkCost + toppingCost) * quantity;
+  const customizationAnnouncement = buildCustomizationAnnouncement(drink, isHappyHour, selectableToppings);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
@@ -533,23 +720,36 @@ function CustomizeModal({
 
         {/* Modal header */}
         <div className={`px-5 py-4 border-b ${isHappyHour ? 'bg-amber-50 border-amber-200' : ''}`}>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold">{drink.name}</h3>
-            {isHappyHour && (
-              <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                -{HAPPY_HOUR_DISCOUNT_PCT}%
-              </span>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold">{drink.name}</h3>
+                {isHappyHour && (
+                  <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    -{HAPPY_HOUR_DISCOUNT_PCT}%
+                  </span>
+                )}
+              </div>
+              {isHappyHour ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-sm text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
+                  <span className="text-lg font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
+                  <span className="text-xs text-amber-600">Happy Hour price</span>
+                </div>
+              ) : (
+                <p className="text-gray-600 mt-0.5">${Number(drink.cost).toFixed(2)}</p>
+              )}
+            </div>
+            {canSpeak && onSpeakDetails && (
+              <SpeakButton
+                compact
+                label={`Hear customization options for ${drink.name}`}
+                aria-label={`Hear customization options for ${drink.name}`}
+                onClick={() => onSpeakDetails(customizationAnnouncement)}
+                className="h-9 w-9 shrink-0"
+              />
             )}
           </div>
-          {isHappyHour ? (
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-sm text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
-              <span className="text-lg font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
-              <span className="text-xs text-amber-600">Happy Hour price</span>
-            </div>
-          ) : (
-            <p className="text-gray-600 mt-0.5">${Number(drink.cost).toFixed(2)}</p>
-          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">

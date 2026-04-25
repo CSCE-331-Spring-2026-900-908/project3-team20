@@ -210,20 +210,6 @@ html.dark-mode [disabled] {
   opacity: 0.6 !important;
 }
 
-#theme-toggle {
-  font-size: 0 !important;
-}
-
-#theme-toggle::before {
-  content: "High Contrast";
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-html.dark-mode #theme-toggle::before {
-  content: "Standard View";
-}
-
 .customization-slider {
   display: flex;
   flex-wrap: nowrap;

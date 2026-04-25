@@ -41,7 +41,7 @@ const SUPPORTED_LANGUAGES = [
 
 const EXCLUDED_TAGS = new Set([
   'SCRIPT', 'STYLE', 'INPUT', 'TEXTAREA', 'SELECT',
-  'OPTION', 'BUTTON', 'NOSCRIPT', 'IFRAME', 'OBJECT', 'EMBED',
+  'OPTION', 'NOSCRIPT', 'IFRAME', 'OBJECT', 'EMBED',
 ]);
 
 function shouldExcludeNode(node: Text): boolean {
@@ -50,6 +50,8 @@ function shouldExcludeNode(node: Text): boolean {
   if (EXCLUDED_TAGS.has(parent.tagName)) return true;
   if (!node.textContent?.trim()) return true;
   if (parent.isContentEditable) return true;
+  // Exclude form inputs but allow buttons (tabs, toggle buttons) to be translated
+  if (parent.tagName === 'INPUT' || parent.tagName === 'TEXTAREA') return true;
   return false;
 }
 

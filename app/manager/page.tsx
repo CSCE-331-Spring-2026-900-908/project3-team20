@@ -159,6 +159,12 @@ export default function ManagerPage() {
   const [deleteDrinkTarget, setDeleteDrinkTarget] = useState<Drink | null>(null);
   const [recipeRows, setRecipeRows] = useState<RecipeRow[]>([{ ingredientid: 0, amount: 0 }]);
 
+  const [editDrinkTarget, setEditDrinkTarget] = useState<Drink | null>(null);
+  const [editDrinkName, setEditDrinkName] = useState('');
+  const [editDrinkCost, setEditDrinkCost] = useState('');
+  const [editDrinkRecipeRows, setEditDrinkRecipeRows] = useState<RecipeRow[]>([]);
+  const [editDrinkError, setEditDrinkError] = useState('');
+
 
   const fetchReports = async () => {
     setReportsLoading(true);
@@ -276,6 +282,45 @@ export default function ManagerPage() {
     setDeleteDrinkTarget(null);
     fetchDrinks();
   };
+
+  const openEditDrink = async (drink: Drink) => {
+    setEditDrinkName(drink.name);
+    setEditDrinkCost(String(drink.cost));
+    setEditDrinkError('');
+    setEditDrinkRecipeRows([]);
+    const res = await fetch(`/api/drinks?drinkid=${drink.drinkid}`);
+    const data = await res.json();
+    const clean = Array.isArray(data)
+      ? data.filter((r: RecipeRow) => r.ingredientid && r.ingredientid !== 0)
+      : [];
+    setEditDrinkRecipeRows(clean);
+    setTimeout(() => setEditDrinkTarget(drink), 0);
+  };
+
+  const handleEditDrinkSave = async () => {
+    if (!editDrinkTarget) return;
+    if (!editDrinkName.trim()) { setEditDrinkError('Name cannot be empty.'); return; }
+    const costVal = parseFloat(editDrinkCost);
+    if (isNaN(costVal) || costVal < 0) { setEditDrinkError('Cost must be a valid non-negative number.'); return; }
+    if (editDrinkRecipeRows.some(r => r.ingredientid === 0 || r.amount <= 0)) {
+      setEditDrinkError('All recipe rows must have an ingredient and amount greater than 0.');
+      return;
+    }
+    const res = await fetch('/api/drinks', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        drinkid: editDrinkTarget.drinkid,
+        name: editDrinkName.trim(),
+        cost: costVal,
+        recipes: editDrinkRecipeRows,
+      }),
+    });
+    if (!res.ok) { setEditDrinkError('Failed to save changes.'); return; }
+    setEditDrinkTarget(null);
+    fetchDrinks();
+  };
+
 
   const openAdd = (type: AddType) => {
     setAddType(type);
@@ -548,12 +593,13 @@ export default function ManagerPage() {
               {drinks.map(drink => (
                 <div
                   key={drink.drinkid}
+                  onClick={() => openEditDrink(drink)}
                   className="rounded-lg border-2 border-rose-400 p-4 flex flex-col gap-1 group relative bg-white hover:shadow-md transition"
                 >
                   <span className="font-bold text-sm">{drink.name}</span>
                   <span className="text-gray-600 text-xs">Cost: ${Number(drink.cost).toFixed(2)}</span>
                   <button
-                    onClick={() => setDeleteDrinkTarget(drink)}
+                    onClick={(e) => { e.stopPropagation(); setDeleteDrinkTarget(drink); }}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-600 text-lg leading-none"
                     title="Delete"
                   >
@@ -814,7 +860,90 @@ export default function ManagerPage() {
           </div>
         </div>
       )}
-    
+      {editDrinkTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm max-h-[80vh] overflow-y-auto">
+            <span tabIndex={0} className="sr-only" aria-hidden="true" />
+            <h3 className="text-lg font-bold mb-4">Edit Drink</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" value={editDrinkName} onChange={e => setEditDrinkName(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+                <input type="text" value={editDrinkCost} onChange={e => setEditDrinkCost(e.target.value)}
+                  placeholder="0.00" className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>
+                <div className="space-y-2">
+                  {editDrinkRecipeRows.map((row, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select
+                        value={row.ingredientid}
+                        onChange={e => {
+                          const updated = [...editDrinkRecipeRows];
+                          updated[i] = { ...updated[i], ingredientid: parseInt(e.target.value) };
+                          setEditDrinkRecipeRows(updated);
+                        }}
+                        className="flex-1 border rounded px-2 py-1.5 text-sm"
+                      >
+                        <option value={0}>Select ingredient</option>
+                        {ingredients.map(ing => (
+                          <option key={ing.ingredientid} value={ing.ingredientid}>{ing.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="amount"
+                        value={row.amount || ''}
+                        onChange={e => {
+                          const updated = [...editDrinkRecipeRows];
+                          updated[i] = { ...updated[i], amount: parseFloat(e.target.value) || 0 };
+                          setEditDrinkRecipeRows(updated);
+                        }}
+                        className="w-20 border rounded px-2 py-1.5 text-sm"
+                      />
+                      <button
+                        onClick={() => setEditDrinkRecipeRows(editDrinkRecipeRows.filter((_, j) => j !== i))}
+                        className="text-red-400 hover:text-red-600 text-lg leading-none"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setEditDrinkRecipeRows([...editDrinkRecipeRows, { ingredientid: 0, amount: 0 }])}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    + Add ingredient
+                  </button>
+                </div>
+              </div>
+              {editDrinkError && <p className="text-red-500 text-sm">{editDrinkError}</p>}
+            </div>
+            <div className="flex justify-between mt-5">
+              <button
+                onClick={() => { setEditDrinkTarget(null); setDeleteDrinkTarget(editDrinkTarget); }}
+                className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setEditDrinkTarget(null)} className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button onClick={handleEditDrinkSave} className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}    
       {showXReport && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowXReport(false)}>
         <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>

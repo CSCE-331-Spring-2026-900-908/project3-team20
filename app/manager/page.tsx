@@ -841,11 +841,11 @@ export default function ManagerPage() {
                   className="w-full border rounded px-3 py-2 text-sm"
                 >
                   <option value="">Select category</option>
-                  <option value="fruity">Fruity</option>
-                  <option value="milk tea">Milk Tea</option>
-                  <option value="signature">Signature</option>
-                  <option value="specialty">Specialty</option>
-                  <option value="tea">Tea</option>
+                  <option value="Fruity">Fruity</option>
+                  <option value="Milk Tea">Milk Tea</option>
+                  <option value="Signature">Signature</option>
+                  <option value="Specialty">Specialty</option>
+                  <option value="Tea">Tea</option>
                 </select>
               </div>
               <div>
@@ -1066,11 +1066,11 @@ export default function ManagerPage() {
                   className="w-full border rounded px-3 py-2 text-sm"
                 >
                   <option value="">Select category</option>
-                  <option value="fruity">Fruity</option>
-                  <option value="milk tea">Milk Tea</option>
-                  <option value="signature">Signature</option>
-                  <option value="specialty">Specialty</option>
-                  <option value="tea">Tea</option>
+                  <option value="Fruity">Fruity</option>
+                  <option value="Milk Tea">Milk Tea</option>
+                  <option value="Signature">Signature</option>
+                  <option value="Specialty">Specialty</option>
+                  <option value="Tea">Tea</option>
                 </select>
               </div>
               <div>

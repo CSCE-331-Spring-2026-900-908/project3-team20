@@ -221,6 +221,7 @@ export default function ManagerPage() {
   const [addDrinkName, setAddDrinkName] = useState('');
   const [addDrinkCost, setAddDrinkCost] = useState('');
   const [addDrinkCategory, setAddDrinkCategory] = useState('');
+  const [addDrinkImage, setAddDrinkImage] = useState<File | null>(null);
   const [addDrinkError, setAddDrinkError] = useState('');
   const [deleteDrinkTarget, setDeleteDrinkTarget] = useState<Drink | null>(null);
   const [recipeRows, setRecipeRows] = useState<RecipeRow[]>([{ ingredientid: 0, amount: 0 }]);
@@ -229,6 +230,7 @@ export default function ManagerPage() {
   const [editDrinkName, setEditDrinkName] = useState('');
   const [editDrinkCost, setEditDrinkCost] = useState('');
   const [editDrinkCategory, setEditDrinkCategory] = useState('');
+  const [editDrinkImage, setEditDrinkImage] = useState<File | null>(null);
   const [editDrinkRecipeRows, setEditDrinkRecipeRows] = useState<RecipeRow[]>([]);
   const [editDrinkError, setEditDrinkError] = useState('');
 
@@ -322,6 +324,21 @@ export default function ManagerPage() {
       return;
     }
 
+    let imageUrl = null;
+    if (addDrinkImage) {
+      const formData = new FormData();
+      formData.append('file', addDrinkImage);
+      formData.append('drinkName', addDrinkName.trim());
+      const uploadRes = await fetch('/api/upload/drink-image', {
+        method: 'POST',
+        body: formData,
+      });
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+    }
+
     const res = await fetch('/api/drinks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -329,6 +346,7 @@ export default function ManagerPage() {
         name: addDrinkName.trim(),
         cost: costVal,
         category: addDrinkCategory,
+        image_url: imageUrl,
         recipes: recipeRows,
       }),
     });
@@ -337,6 +355,7 @@ export default function ManagerPage() {
     setAddDrinkName('');
     setAddDrinkCost('');
     setAddDrinkCategory('');
+    setAddDrinkImage(null);
     setRecipeRows([{ ingredientid: 0, amount: 0 }]);
     fetchDrinks();
   };
@@ -376,6 +395,22 @@ export default function ManagerPage() {
       setEditDrinkError('All recipe rows must have an ingredient and amount greater than 0.');
       return;
     }
+
+    let imageUrl = null;
+    if (editDrinkImage) {
+      const formData = new FormData();
+      formData.append('file', editDrinkImage);
+      formData.append('drinkName', editDrinkName.trim());
+      const uploadRes = await fetch('/api/upload/drink-image', {
+        method: 'POST',
+        body: formData,
+      });
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+    }
+
     const res = await fetch('/api/drinks', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -384,11 +419,13 @@ export default function ManagerPage() {
         name: editDrinkName.trim(),
         cost: costVal,
         category: editDrinkCategory,
+        image_url: imageUrl,
         recipes: editDrinkRecipeRows,
       }),
     });
     if (!res.ok) { setEditDrinkError('Failed to save changes.'); return; }
     setEditDrinkTarget(null);
+    setEditDrinkImage(null);
     fetchDrinks();
   };
 
@@ -804,12 +841,21 @@ export default function ManagerPage() {
                   className="w-full border rounded px-3 py-2 text-sm"
                 >
                   <option value="">Select category</option>
-                  <option value="Fruity">Fruity</option>
-                  <option value="Milk Tea">Milk Tea</option>
-                  <option value="Signature">Signature</option>
-                  <option value="Specialty">Specialty</option>
-                  <option value="Tea">Tea</option>
+                  <option value="fruity">Fruity</option>
+                  <option value="milk tea">Milk Tea</option>
+                  <option value="signature">Signature</option>
+                  <option value="specialty">Specialty</option>
+                  <option value="tea">Tea</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setAddDrinkImage(e.target.files?.[0] || null)}
+                  className="w-full border rounded px-3 py-2 text-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-rose-50 file:text-rose-700 file:text-sm file:font-semibold hover:file:bg-rose-100"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>
@@ -1020,12 +1066,21 @@ export default function ManagerPage() {
                   className="w-full border rounded px-3 py-2 text-sm"
                 >
                   <option value="">Select category</option>
-                  <option value="Fruity">Fruity</option>
-                  <option value="Milk Tea">Milk Tea</option>
-                  <option value="Signature">Signature</option>
-                  <option value="Specialty">Specialty</option>
-                  <option value="Tea">Tea</option>
+                  <option value="fruity">Fruity</option>
+                  <option value="milk tea">Milk Tea</option>
+                  <option value="signature">Signature</option>
+                  <option value="specialty">Specialty</option>
+                  <option value="tea">Tea</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setEditDrinkImage(e.target.files?.[0] || null)}
+                  className="w-full border rounded px-3 py-2 text-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-rose-50 file:text-rose-700 file:text-sm file:font-semibold hover:file:bg-rose-100"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>

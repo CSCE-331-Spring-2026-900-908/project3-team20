@@ -4,55 +4,15 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
-const categoryConfig: Record<string, { headerBg: string; headerText: string; cardBg: string; border: string; dot: string; price: string }> = {
-  'fruity': {
-    headerBg: 'bg-pink-100 border-pink-200',
-    headerText: 'text-pink-700',
-    cardBg: 'bg-white hover:bg-pink-50',
-    border: 'border-pink-200',
-    dot: 'bg-pink-400',
-    price: 'text-pink-600',
-  },
-  'milk tea': {
-    headerBg: 'bg-amber-100 border-amber-200',
-    headerText: 'text-amber-800',
-    cardBg: 'bg-white hover:bg-amber-50',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
-    price: 'text-amber-700',
-  },
-  'signature': {
-    headerBg: 'bg-violet-100 border-violet-200',
-    headerText: 'text-violet-700',
-    cardBg: 'bg-white hover:bg-violet-50',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
-    price: 'text-violet-600',
-  },
-  'specialty': {
-    headerBg: 'bg-orange-100 border-orange-200',
-    headerText: 'text-orange-800',
-    cardBg: 'bg-white hover:bg-orange-50',
-    border: 'border-orange-200',
-    dot: 'bg-orange-500',
-    price: 'text-orange-700',
-  },
-  'tea': {
-    headerBg: 'bg-emerald-100 border-emerald-200',
-    headerText: 'text-emerald-700',
-    cardBg: 'bg-white hover:bg-emerald-50',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
-    price: 'text-emerald-600',
-  },
-  'other': {
-    headerBg: 'bg-stone-100 border-stone-200',
-    headerText: 'text-stone-700',
-    cardBg: 'bg-white hover:bg-stone-50',
-    border: 'border-stone-200',
-    dot: 'bg-stone-500',
-    price: 'text-stone-600',
-  },
+const CATEGORY_ORDER = ['fruity', 'milk tea', 'signature', 'specialty', 'tea', 'other'];
+
+const categoryConfig: Record<string, { bg: string; border: string; text: string; label: string }> = {
+  'fruity': { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-700', label: 'bg-pink-500' },
+  'milk tea': { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800', label: 'bg-amber-600' },
+  'signature': { bg: 'bg-violet-100', border: 'border-violet-300', text: 'text-violet-700', label: 'bg-violet-600' },
+  'specialty': { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800', label: 'bg-orange-500' },
+  'tea': { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-emerald-700', label: 'bg-emerald-600' },
+  'other': { bg: 'bg-stone-100', border: 'border-stone-300', text: 'text-stone-700', label: 'bg-stone-500' },
 };
 
 function getCatConfig(category: string | null) {
@@ -60,7 +20,7 @@ function getCatConfig(category: string | null) {
   return categoryConfig[key] ?? categoryConfig['other'];
 }
 
-function getDrinkImagePath(drinkName: string): string { //image path generator based on drink name. need to put images in the images/drinms folder.
+function getDrinkImagePath(drinkName: string): string {
   const slug = drinkName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   return `/images/drinks/${slug}.png`;
 }
@@ -87,121 +47,184 @@ export default function MenuBoardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const categories = Array.from(new Set(drinks.map(d => d.category ?? 'Other')));
-  const drinksByCategory = categories.reduce<Record<string, Drink[]>>((acc, cat) => {
-    acc[cat] = drinks.filter(d => (d.category ?? 'Other') === cat);
-    return acc;
-  }, {});
+  // Build ordered drink list: Fruity → Milk Tea → Signature → Specialty → Tea → Other
+  const orderedDrinks: Drink[] = [];
+  for (const cat of CATEGORY_ORDER) {
+    const catDrinks = drinks.filter(d => (d.category ?? 'other').toLowerCase() === cat);
+    orderedDrinks.push(...catDrinks);
+  }
+
+  const handleImgError = (id: number) => {
+    setImgErrors(prev => new Set(prev).add(id));
+  };
 
   return (
     <div className="h-screen overflow-hidden bg-[#f8f3e3] text-[#2A2A2A] flex flex-col">
 
+      <style jsx global>{`
+        @keyframes scroll-wheel {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes scroll-toppings {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .drinks-wheel {
+          animation: scroll-wheel 80s linear infinite;
+        }
+        .toppings-track {
+          animation: scroll-toppings 50s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .drinks-wheel, .toppings-track {
+            animation: none;
+          }
+        }
+      `}</style>
+
       {/* Header */}
-      <header className="shrink-0 bg-white border-b border-stone-200 px-6 py-3 flex items-center justify-between shadow-sm">
-        <p className="text-stone-400 text-[10px] tracking-[0.35em] uppercase font-semibold hidden sm:block">
+      <header className="shrink-0 bg-white border-b border-stone-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <p className="text-stone-400 text-xs tracking-[0.35em] uppercase font-semibold hidden sm:block">
           Fresh Made Daily
         </p>
-        <h1 className="text-2xl font-bold text-[#2A2A2A] tracking-tight mx-auto sm:mx-0">
+        <h1 className="text-3xl font-bold text-[#2A2A2A] tracking-tight mx-auto sm:mx-0">
           Our Menu
         </h1>
-        <p className="text-stone-400 text-[10px] tracking-widest uppercase hidden sm:block">
+        <p className="text-stone-400 text-xs tracking-widest uppercase hidden sm:block">
           Customizable · All sizes
         </p>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-hidden flex flex-col px-4 py-3 gap-3">
+      {/* Main scroll area */}
+      <main className="flex-1 overflow-hidden flex flex-col">
 
         {loading ? (
-          <p className="text-stone-400 text-center m-auto text-lg tracking-wide">
+          <p className="text-stone-400 text-center m-auto text-xl tracking-wide">
             Loading menu…
           </p>
         ) : (
           <>
-            {/* Categories side by side */}
-            <div
-              className="flex-1 overflow-hidden grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}
-            >
-              {categories.map(category => {
-                const cfg = getCatConfig(category);
-                return (
-                  <section key={category} className="flex flex-col overflow-hidden">
+            {/* Giant drinks wheel - single continuous scroll */}
+            <div className="flex-1 overflow-hidden relative">
+              <div className="drinks-wheel flex items-center gap-6 h-full py-4 px-2" style={{ width: 'max-content' }}>
+                {/* First copy */}
+                {orderedDrinks.map(drink => {
+                  const cfg = getCatConfig(drink.category);
+                  return (
+                    <div
+                      key={`${drink.drinkid}-a`}
+                      className={`shrink-0 h-full flex flex-col items-center justify-center ${cfg.bg} ${cfg.border} border-4 rounded-3xl px-6 py-4`}
+                      style={{ minWidth: '200px', maxWidth: '200px' }}
+                    >
+                      {/* Category label pill */}
+                      <div className={`${cfg.label} text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wide`}>
+                        {drink.category ?? 'Other'}
+                      </div>
 
-                    {/* Category header */}
-                    <div className={`flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl border shrink-0 ${cfg.headerBg}`}>
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${cfg.dot}`} />
-                      <h2 className={`text-sm font-bold uppercase tracking-[0.15em] ${cfg.headerText}`}>
-                        {category}
-                      </h2>
-                    </div>
-
-                    {/* Drink list */}
-                    <div className="flex-1 overflow-hidden flex flex-col gap-1">
-                      {drinksByCategory[category].map(drink => (
-                        <div
-                          key={drink.drinkid}
-                          className={`flex-1 min-h-0 rounded-xl border flex items-center gap-2 px-2 py-1 transition-colors ${cfg.cardBg} ${cfg.border}`}
-                        >
-                          {/* Small circular image bubble */}
-                          <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm bg-stone-100">
-                            {!imgErrors.has(drink.drinkid) ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={getDrinkImagePath(drink.name)}
-                                alt={drink.name}
-                                className="w-full h-full object-cover"
-                                onError={() =>
-                                  setImgErrors(prev => new Set(prev).add(drink.drinkid))
-                                }
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400 text-xs">
-                                ☕
-                              </div>
-                            )}
+                      {/* Large rectangular image */}
+                      <div className="w-full h-72 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
+                        {!imgErrors.has(drink.drinkid) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getDrinkImagePath(drink.name)}
+                            alt={drink.name}
+                            className="w-full h-full object-cover"
+                            onError={() => handleImgError(drink.drinkid)}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400 text-4xl">
+                            ☕
                           </div>
+                        )}
+                      </div>
 
-                          {/* Name + price */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-[#2A2A2A] leading-snug truncate">
-                              {drink.name}
-                            </p>
-                            <p className={`text-xs font-bold mt-0.5 ${cfg.price}`}>
-                              ${Number(drink.cost).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                      {/* Drink name */}
+                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 max-h-14 overflow-hidden">
+                        {drink.name}
+                      </p>
+
+                      {/* Price */}
+                      <p className={`text-2xl font-bold ${cfg.text}`}>
+                        ${Number(drink.cost).toFixed(2)}
+                      </p>
                     </div>
+                  );
+                })}
 
-                  </section>
-                );
-              })}
+                {/* Duplicate for seamless loop */}
+                {orderedDrinks.map(drink => {
+                  const cfg = getCatConfig(drink.category);
+                  return (
+                    <div
+                      key={`${drink.drinkid}-b`}
+                      className={`shrink-0 h-full flex flex-col items-center justify-center ${cfg.bg} ${cfg.border} border-4 rounded-3xl px-6 py-4`}
+                      style={{ minWidth: '200px', maxWidth: '200px' }}
+                    >
+                      {/* Category label pill */}
+                      <div className={`${cfg.label} text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wide`}>
+                        {drink.category ?? 'Other'}
+                      </div>
+
+                      {/* Large rectangular image */}
+                      <div className="w-full h-72 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
+                        {!imgErrors.has(drink.drinkid) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getDrinkImagePath(drink.name)}
+                            alt={drink.name}
+                            className="w-full h-full object-cover"
+                            onError={() => handleImgError(drink.drinkid)}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400 text-4xl">
+                            ☕
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Drink name */}
+                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 max-h-14 overflow-hidden">
+                        {drink.name}
+                      </p>
+
+                      {/* Price */}
+                      <p className={`text-2xl font-bold ${cfg.text}`}>
+                        ${Number(drink.cost).toFixed(2)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Toppings strip */}
+            {/* Toppings scrolling strip */}
             {toppings.length > 0 && (
-              <section className="shrink-0">
-                <div className="flex items-center gap-2 mb-1.5 px-3 py-1.5 rounded-xl border bg-teal-50 border-teal-200">
-                  <span className="h-2.5 w-2.5 rounded-full bg-teal-500 shrink-0" />
-                  <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-teal-700">
+              <section className="shrink-0 py-3 border-t border-stone-200 bg-white/50">
+                <div className="flex items-center gap-2 mb-2 px-4">
+                  <span className="h-3 w-3 rounded-full bg-teal-500 shrink-0" />
+                  <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-teal-700">
                     Add-Ons &amp; Toppings
                   </h2>
                 </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {toppings.map(topping => (
-                    <div
-                      key={topping.toppingid}
-                      className="shrink-0 rounded-xl border border-teal-200 bg-white px-3 py-2 flex flex-col gap-0.5 min-w-[80px]"
-                    >
-                      <span className="font-semibold text-xs text-[#2A2A2A] leading-snug">{topping.name}</span>
-                      <span className="text-[10px] font-bold text-teal-600">
-                        +${Number(topping.price).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="overflow-hidden">
+                  <div className="toppings-track flex gap-3 px-4" style={{ width: 'max-content' }}>
+                    {/* First copy */}
+                    {toppings.map(topping => (
+                      <div key={`${topping.toppingid}-a`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
+                        <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
+                        <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    {/* Duplicate for seamless loop */}
+                    {toppings.map(topping => (
+                      <div key={`${topping.toppingid}-b`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
+                        <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
+                        <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             )}
@@ -210,7 +233,7 @@ export default function MenuBoardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="shrink-0 text-center py-1.5 text-stone-400 text-[9px] tracking-[0.3em] uppercase border-t border-stone-200">
+      <footer className="shrink-0 text-center py-2 text-stone-400 text-xs tracking-[0.3em] uppercase border-t border-stone-200">
         Prices subject to change · Tax not included
       </footer>
 

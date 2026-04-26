@@ -28,12 +28,12 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   const client = await pool.connect();
   try {
-    const { drinkid, name, cost, category, recipes } = await request.json();
+    const { drinkid, name, cost, category, image_url, recipes } = await request.json();
     await client.query('BEGIN');
 
     await client.query(
-      'UPDATE drinks SET name = $1, cost = $2, category = $3 WHERE drinkid = $4',
-      [name, cost, drinkid]
+      'UPDATE drinks SET name = $1, cost = $2, category = $3, image_url = $4 WHERE drinkid = $5',
+      [name, cost, category || 'other', image_url || null, drinkid]
     );
 
     await client.query('DELETE FROM recipes WHERE drinkid = $1', [drinkid]);
@@ -61,12 +61,12 @@ export async function PUT(request: Request) {
 export async function POST(request: Request) {
   const client = await pool.connect();
   try {
-    const { name, cost, recipes } = await request.json();
+    const { name, cost, category, image_url, recipes } = await request.json();
     await client.query('BEGIN');
 
     const drinkResult = await client.query(
-      'INSERT INTO drinks (name, cost) VALUES ($1, $2) RETURNING *',
-      [name, cost]
+      'INSERT INTO drinks (name, cost, category, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, cost, category || 'other', image_url || null]
     );
     const drinkid = drinkResult.rows[0].drinkid;
 

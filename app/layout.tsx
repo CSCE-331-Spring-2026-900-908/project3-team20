@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
   viewportFit: "cover" as const,
 };
 
@@ -58,9 +58,9 @@ export default function RootLayout({
         <ButtonSizeProvider>
           <TranslationProvider>
             <AccessibilityBar />
-            <div className="flex-1 min-h-0 overflow-auto">
+            <main className="flex-1 min-h-0 overflow-auto">
               {children}
-            </div>
+            </main>
           </TranslationProvider>
         </ButtonSizeProvider>
       </body>

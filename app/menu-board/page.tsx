@@ -60,7 +60,7 @@ function getCatConfig(category: string | null) {
   return categoryConfig[key] ?? categoryConfig['other'];
 }
 
-function getDrinkImagePath(drinkName: string): string {
+function getDrinkImagePath(drinkName: string): string { //image path generator based on drink name. need to put images in the images/drinms folder.
   const slug = drinkName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   return `/images/drinks/${slug}.png`;
 }

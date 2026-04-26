@@ -151,6 +151,17 @@ export default function CustomerPage() {
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [wheelPrize, setWheelPrize] = useState<WheelPrize | null>(null);
   const [hasSpunWheel, setHasSpunWheel] = useState(false);
+  const [isHighContrast, setIsHighContrast] = useState(false);
+
+  useEffect(() => {
+    const checkContrast = () => {
+      setIsHighContrast(document.documentElement.classList.contains('dark-mode'));
+    };
+    checkContrast();
+    const observer = new MutationObserver(checkContrast);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // --- Happy hour: computed purely client-side, rechecked every minute ---
   const [isHappyHour, setIsHappyHour] = useState(false);
@@ -416,6 +427,12 @@ export default function CustomerPage() {
                     {drink.name}
                   </span>
                 </div>
+                {isHighContrast && drink.category && (
+                  <span className="absolute top-2 right-2 bg-black text-white text-[9px] font-bold px-1.5 py-0.5 rounded leading-tight uppercase">
+                    {drink.category}
+                  </span>
+                )}
+                <span className="font-medium pr-8">{drink.name}</span>
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
                     {isHappyHour ? (

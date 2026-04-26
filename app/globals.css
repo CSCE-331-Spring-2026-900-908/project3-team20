@@ -197,6 +197,560 @@ html.dark-mode .text-amber-600 {
   color: #ffff00 !important;
 }
 
+/* High contrast: preserve category colors with tinted backgrounds */
+html.dark-mode .bg-pink-100,
+html.dark-mode .bg-amber-100,
+html.dark-mode .bg-violet-100,
+html.dark-mode .bg-orange-100,
+html.dark-mode .bg-emerald-100 {
+  background-color: #1a1a2e !important;
+}
+
+html.dark-mode .bg-stone-100 {
+  background-color: #1c1c1c !important;
+}
+
+html.dark-mode .bg-pink-50,
+html.dark-mode .bg-amber-50,
+html.dark-mode .bg-violet-50,
+html.dark-mode .bg-orange-50,
+html.dark-mode .bg-emerald-50 {
+  background-color: #0f0f1a !important;
+}
+
+html.dark-mode .bg-teal-50 {
+  background-color: #0a1a1a !important;
+}
+
+/* Preserve colored text for category differentiation */
+html.dark-mode .text-pink-700,
+html.dark-mode .text-pink-600,
+html.dark-mode .text-pink-500 {
+  color: #ff6b9d !important;
+}
+
+html.dark-mode .text-amber-800,
+html.dark-mode .text-amber-700,
+html.dark-mode .text-amber-600 {
+  color: #ffb347 !important;
+}
+
+html.dark-mode .text-violet-700,
+html.dark-mode .text-violet-600,
+html.dark-mode .text-violet-500 {
+  color: #b388ff !important;
+}
+
+html.dark-mode .text-orange-800,
+html.dark-mode .text-orange-700,
+html.dark-mode .text-orange-600 {
+  color: #ff8c42 !important;
+}
+
+html.dark-mode .text-emerald-700,
+html.dark-mode .text-emerald-600,
+html.dark-mode .text-emerald-500 {
+  color: #50fa7b !important;
+}
+
+html.dark-mode .text-teal-700,
+html.dark-mode .text-teal-600 {
+  color: #64ffda !important;
+}
+
+html.dark-mode .text-stone-700,
+html.dark-mode .text-stone-600 {
+  color: #c0c0c0 !important;
+}
+
+/* Colored dots for category identification */
+html.dark-mode .bg-pink-400 {
+  background-color: #ff6b9d !important;
+}
+
+html.dark-mode .bg-amber-500 {
+  background-color: #ffb347 !important;
+}
+
+html.dark-mode .bg-violet-500 {
+  background-color: #b388ff !important;
+}
+
+html.dark-mode .bg-orange-500 {
+  background-color: #ff8c42 !important;
+}
+
+html.dark-mode .bg-emerald-500 {
+  background-color: #50fa7b !important;
+}
+
+html.dark-mode .bg-teal-500 {
+  background-color: #64ffda !important;
+}
+
+html.dark-mode .bg-stone-500 {
+  background-color: #c0c0c0 !important;
+}
+
+/* Colored borders for category differentiation */
+html.dark-mode .border-pink-200 {
+  border-color: #ff6b9d !important;
+}
+
+html.dark-mode .border-amber-200 {
+  border-color: #ffb347 !important;
+}
+
+html.dark-mode .border-violet-200 {
+  border-color: #b388ff !important;
+}
+
+html.dark-mode .border-orange-200 {
+  border-color: #ff8c42 !important;
+}
+
+html.dark-mode .border-emerald-200 {
+  border-color: #50fa7b !important;
+}
+
+html.dark-mode .border-teal-200 {
+  border-color: #64ffda !important;
+}
+
+html.dark-mode .border-stone-200 {
+  border-color: #888888 !important;
+}
+
+/* Inventory section: border colors for ingredients, toppings, misc, menu */
+html.dark-mode .border-amber-400 {
+  border-color: #ffb347 !important;
+}
+
+html.dark-mode .border-blue-400 {
+  border-color: #40c4ff !important;
+}
+
+html.dark-mode .border-emerald-400 {
+  border-color: #50fa7b !important;
+}
+
+html.dark-mode .border-rose-400 {
+  border-color: #ff6b9d !important;
+}
+
+html.dark-mode .border-violet-400 {
+  border-color: #b388ff !important;
+}
+
+html.dark-mode .border-violet-500 {
+  border-color: #b388ff !important;
+}
+
+html.dark-mode .bg-violet-500 {
+  background-color: #b388ff !important;
+}
+
+html.dark-mode .border-stone-400 {
+  border-color: #888888 !important;
+}
+
+html.dark-mode .border-teal-400 {
+  border-color: #64ffda !important;
+}
+
+/* Bar chart component dark mode styles - use explicit classes */
+html.dark-mode .bg-blue-500 {
+  background-color: #40c4ff !important;
+}
+
+html.dark-mode .bg-emerald-500 {
+  background-color: #50fa7b !important;
+}
+
+html.dark-mode .bg-amber-500 {
+  background-color: #ffb347 !important;
+}
+
+html.dark-mode .bg-violet-500 {
+  background-color: #b388ff !important;
+}
+
+html.dark-mode .bg-rose-500 {
+  background-color: #ff6b9d !important;
+}
+
+html.dark-mode .bg-teal-500 {
+  background-color: #64ffda !important;
+}
+
+html.dark-mode .bg-orange-500 {
+  background-color: #ff8c42 !important;
+}
+
+/* Bar chart text contrast fixes for dark mode */
+html.dark-mode .text-gray-600 {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+html.dark-mode .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+/* Low stock warning styles */
+html.dark-mode .bg-red-50 {
+  background-color: #1a0f0f !important;
+}
+
+html.dark-mode .hover\:bg-red-50:hover {
+  background-color: #251515 !important;
+}
+
+html.dark-mode .text-red-600 {
+  color: #ff6b6b !important;
+}
+
+html.dark-mode .text-red-400 {
+  color: #ff8080 !important;
+}
+
+html.dark-mode .hover\:text-red-600:hover {
+  color: #ff6b6b !important;
+}
+
+/* Reports section: purple buttons */
+html.dark-mode .text-purple-500,
+html.dark-mode .text-purple-600 {
+  color: #b388ff !important;
+}
+
+html.dark-mode .hover\:bg-purple-600:hover {
+  background-color: #9c27b0 !important;
+}
+
+html.dark-mode .border-purple-500 {
+  border-color: #b388ff !important;
+}
+
+/* Reports tables: gray header/body backgrounds */
+html.dark-mode .divide-gray-100 {
+  border-color: #3a3a3a !important;
+}
+
+html.dark-mode .divide-y > * + * {
+  border-top-color: #3a3a3a !important;
+}
+
+/* Employee manager: role badges */
+html.dark-mode .bg-amber-100 {
+  background-color: #251a12 !important;
+}
+
+html.dark-mode .text-amber-700 {
+  color: #ffb347 !important;
+}
+
+/* Shadow and transition preservation */
+html.dark-mode .hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Modal/dialog backgrounds */
+html.dark-mode .bg-black\/40,
+html.dark-mode .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Employee table specific styles */
+html.dark-mode .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+html.dark-mode .bg-gray-100,
+html.dark-mode .disabled\:bg-gray-100:disabled {
+  background-color: #2a2a2a !important;
+}
+
+html.dark-mode .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+html.dark-mode .bg-blue-100 {
+  background-color: #0a1520 !important;
+}
+
+html.dark-mode .text-blue-700 {
+  color: #40c4ff !important;
+}
+
+html.dark-mode .bg-amber-100 {
+  background-color: #251a12 !important;
+}
+
+html.dark-mode .text-amber-700 {
+  color: #ffb347 !important;
+}
+
+/* Manager menu items: category-colored backgrounds */
+html.dark-mode .menu-fruity {
+  background-color: #1a0a15 !important;
+  border-color: #ff6b9d !important;
+}
+
+html.dark-mode .menu-milk-tea {
+  background-color: #1a150a !important;
+}
+
+html.dark-mode .menu-signature {
+  background-color: #150f1a !important;
+}
+
+html.dark-mode .menu-specialty {
+  background-color: #1f1a10 !important;
+  border-color: #ff8c42 !important;
+}
+
+html.dark-mode .menu-tea {
+  background-color: #0a1a10 !important;
+}
+
+html.dark-mode .menu-other {
+  background-color: #1a1a1a !important;
+}
+
+/* Employee summary cards: border colors for high contrast */
+html.dark-mode .border-gray-300 {
+  border-color: #ffb347 !important;
+}
+
+html.dark-mode .border-blue-300 {
+  border-color: #40c4ff !important;
+}
+
+html.dark-mode .border-amber-300 {
+  border-color: #ffb347 !important;
+}
+
+/* Cashier/Manager: gray backgrounds with tint */
+html.dark-mode .bg-white {
+  background-color: #1c1c1c !important;
+}
+
+html.dark-mode .bg-gray-50 {
+  background-color: #0f0f0f !important;
+}
+
+html.dark-mode .bg-gray-100 {
+  background-color: #1a1a1a !important;
+}
+
+html.dark-mode .bg-gray-200 {
+  background-color: #252525 !important;
+}
+
+html.dark-mode .hover\:bg-gray-50:hover {
+  background-color: #1a1a1a !important;
+}
+
+html.dark-mode .hover\:bg-gray-100:hover {
+  background-color: #2a2a2a !important;
+}
+
+/* Cashier/Manager: gray text preservation */
+html.dark-mode .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+html.dark-mode .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+html.dark-mode .text-gray-600 {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+/* Cashier/Manager: gray borders */
+html.dark-mode .border-gray-200 {
+  border-color: #6b7280 !important;
+}
+
+html.dark-mode .border-gray-300 {
+  border-color: #9ca3af !important;
+}
+
+/* Cashier/Manager: action button colors preserved */
+html.dark-mode .bg-amber-500 {
+  background-color: #ffb347 !important;
+}
+
+html.dark-mode .hover\:bg-amber-600:hover {
+  background-color: #ffa726 !important;
+}
+
+html.dark-mode .bg-blue-500 {
+  background-color: #40c4ff !important;
+}
+
+html.dark-mode .hover\:bg-blue-600:hover {
+  background-color: #29b6f6 !important;
+}
+
+html.dark-mode .bg-emerald-500 {
+  background-color: #50fa7b !important;
+}
+
+html.dark-mode .hover\:bg-emerald-600:hover {
+  background-color: #00e676 !important;
+}
+
+html.dark-mode .bg-rose-500 {
+  background-color: #ff6b9d !important;
+}
+
+html.dark-mode .hover\:bg-rose-600:hover {
+  background-color: #ff4081 !important;
+}
+
+html.dark-mode .bg-purple-500 {
+  background-color: #b388ff !important;
+}
+
+html.dark-mode .hover\:bg-purple-600:hover {
+  background-color: #9c27b0 !important;
+}
+
+/* Cashier: additional category color handling (bg-gray variants) */
+html.dark-mode .bg-orange-200 {
+  background-color: #1a1510 !important;
+}
+
+html.dark-mode .hover\:bg-orange-200:hover {
+  background-color: #251a12 !important;
+}
+
+html.dark-mode .border-orange-300 {
+  border-color: #ff8c42 !important;
+}
+
+html.dark-mode .border-emerald-300 {
+  border-color: #50fa7b !important;
+}
+
+html.dark-mode .text-amber-900 {
+  color: #ffb347 !important;
+}
+
+html.dark-mode .hover\:bg-amber-50:hover {
+  background-color: #1a1510 !important;
+}
+
+html.dark-mode .hover\:bg-amber-100:hover {
+  background-color: #251a12 !important;
+}
+
+/* Additional amber/emerald handling for cashier/customer */
+html.dark-mode .bg-amber-50 {
+  background-color: #1a1510 !important;
+}
+
+html.dark-mode .bg-amber-100 {
+  background-color: #251a12 !important;
+}
+
+html.dark-mode .bg-amber-200 {
+  background-color: #1a1510 !important;
+}
+
+html.dark-mode .text-amber-700 {
+  color: #ffb347 !important;
+}
+
+html.dark-mode .text-amber-800 {
+  color: #ffc04d !important;
+}
+
+html.dark-mode .text-amber-900 {
+  color: #ffcc66 !important;
+}
+
+html.dark-mode .border-amber-200 {
+  border-color: #ffb347 !important;
+}
+
+html.dark-mode .border-amber-300 {
+  border-color: #ffc04d !important;
+}
+
+html.dark-mode .border-amber-400 {
+  border-color: #ffd666 !important;
+}
+
+html.dark-mode .bg-emerald-50 {
+  background-color: #0a1a10 !important;
+}
+
+html.dark-mode .bg-emerald-100 {
+  background-color: #0f2512 !important;
+}
+
+html.dark-mode .bg-emerald-200 {
+  background-color: #0a1a10 !important;
+}
+
+html.dark-mode .text-emerald-700 {
+  color: #50fa7b !important;
+}
+
+html.dark-mode .text-emerald-800 {
+  color: #69ff87 !important;
+}
+
+html.dark-mode .border-emerald-200 {
+  border-color: #50fa7b !important;
+}
+
+html.dark-mode .hover\:bg-emerald-100:hover {
+  background-color: #0f2512 !important;
+}
+
+html.dark-mode .hover\:bg-emerald-200:hover {
+  background-color: #142a15 !important;
+}
+
+/* Blue button colors preserved for high contrast */
+html.dark-mode .bg-blue-100 {
+  background-color: #0a1520 !important;
+}
+
+html.dark-mode .text-blue-700 {
+  color: #40c4ff !important;
+}
+
+html.dark-mode .bg-blue-600 {
+  background-color: #29b6f6 !important;
+}
+
+html.dark-mode .hover\:bg-blue-700:hover {
+  background-color: #039be5 !important;
+}
+
+/* Rose button colors preserved for high contrast */
+html.dark-mode .bg-rose-100 {
+  background-color: #1a0f15 !important;
+}
+
+html.dark-mode .text-rose-700 {
+  color: #ff6b9d !important;
+}
+
+/* Focus outline visibility */
 html.dark-mode *:focus-visible,
 html.dark-mode .focus\:ring-black:focus {
   outline: 3px solid #ffff00 !important;

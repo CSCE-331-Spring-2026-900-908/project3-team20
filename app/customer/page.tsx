@@ -422,10 +422,6 @@ export default function CustomerPage() {
                     alt={drink.name}
                     className="w-full h-50 object-cover rounded-lg"
                   />
-
-                  <span className="font-medium text-center text-sm leading-tight">
-                    {drink.name}
-                  </span>
                 </div>
                 {isHighContrast && drink.category && (
                   <span className="absolute top-2 right-2 bg-black text-white text-[9px] font-bold px-1.5 py-0.5 rounded leading-tight uppercase">

@@ -1,6 +1,41 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+export async function PATCH(request: Request) {
+  const client = await pool.connect();
+  try {
+    const { migrateCategories } = await request.json();
+    if (migrateCategories) {
+      await client.query('BEGIN');
+      await client.query(
+        "UPDATE drinks SET category = 'Fruity' WHERE LOWER(category) = 'fruity'",
+      );
+      await client.query(
+        "UPDATE drinks SET category = 'Milk Tea' WHERE LOWER(category) = 'milk tea'",
+      );
+      await client.query(
+        "UPDATE drinks SET category = 'Signature' WHERE LOWER(category) = 'signature'",
+      );
+      await client.query(
+        "UPDATE drinks SET category = 'Specialty' WHERE LOWER(category) = 'specialty'",
+      );
+      await client.query(
+        "UPDATE drinks SET category = 'Tea' WHERE LOWER(category) = 'tea'",
+      );
+      await client.query('COMMIT');
+      return NextResponse.json({ success: true, message: 'Categories migrated' });
+    }
+    return NextResponse.json({ error: 'No migration specified' }, { status: 400 });
+  } catch (error: unknown) {
+    await client.query('ROLLBACK');
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('PATCH /api/drinks error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  } finally {
+    client.release();
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const drinkid = searchParams.get('drinkid');

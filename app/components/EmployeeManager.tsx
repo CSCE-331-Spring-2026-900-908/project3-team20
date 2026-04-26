@@ -220,13 +220,13 @@ export default function EmployeeManager() {
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Total Employees', value: employees.length, accent: 'border-gray-300' },
-          { label: 'Managers', value: managerCount, accent: 'border-blue-300' },
-          { label: 'Cashiers', value: cashierCount, accent: 'border-amber-300' },
+          { label: 'Total Employees', value: employees.length, accent: 'border-teal-400' },
+          { label: 'Managers', value: managerCount, accent: 'border-blue-400' },
+          { label: 'Cashiers', value: cashierCount, accent: 'border-amber-400' },
         ].map(card => (
           <div
             key={card.label}
-            className={`rounded-xl border ${card.accent} bg-white p-4 shadow-sm`}
+            className={`rounded-xl border-2 ${card.accent} bg-white p-4 shadow-sm`}
           >
             <p className="text-sm text-gray-500">{card.label}</p>
             <p className="mt-2 text-2xl font-bold text-gray-900">{card.value}</p>

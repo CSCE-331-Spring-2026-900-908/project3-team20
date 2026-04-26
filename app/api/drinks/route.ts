@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     const result = await pool.query(
-      'SELECT drinkid, name, cost, category FROM drinks WHERE name IS NOT NULL ORDER BY category, name'
+      'SELECT drinkid, name, cost, category, image_url FROM drinks WHERE name IS NOT NULL ORDER BY category, name'
     );
     return NextResponse.json(result.rows);
   } catch (error: unknown) {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   const client = await pool.connect();
   try {
-    const { drinkid, name, cost, recipes } = await request.json();
+    const { drinkid, name, cost, category, recipes } = await request.json();
     await client.query('BEGIN');
 
     await client.query(

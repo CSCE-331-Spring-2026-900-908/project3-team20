@@ -3,6 +3,7 @@ export interface Drink {
   name: string;
   cost: number;
   category: string | null;
+  image_url: string | null;
 }
 
 export interface Topping {

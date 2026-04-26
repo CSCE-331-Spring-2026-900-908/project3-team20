@@ -405,7 +405,17 @@ export default function CustomerPage() {
                     -{HAPPY_HOUR_DISCOUNT_PCT}%
                   </span>
                 )}
-                <span className="font-medium pr-8">{drink.name}</span>
+                <div className="flex flex-col items-center gap-2">
+                  <img
+                    src={drink.image_url || "/images/drinks/default-drink.png"}
+                    alt={drink.name}
+                    className="w-full h-50 object-cover rounded-lg"
+                  />
+
+                  <span className="font-medium text-center text-sm leading-tight">
+                    {drink.name}
+                  </span>
+                </div>
                 <div className="flex justify-between items-end">
                   <div className="flex flex-col">
                     {isHappyHour ? (

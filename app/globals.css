@@ -387,6 +387,19 @@ html.dark-mode .bg-orange-500 {
   background-color: #ff8c42 !important;
 }
 
+/* Bar chart text contrast fixes for dark mode */
+html.dark-mode .text-gray-600 {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+html.dark-mode .text-gray-500 {
+  color: #d1d5db !important;
+}
+
 /* Low stock warning styles */
 html.dark-mode .bg-red-50 {
   background-color: #1a0f0f !important;

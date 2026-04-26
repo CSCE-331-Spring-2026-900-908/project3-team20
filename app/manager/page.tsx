@@ -5,6 +5,57 @@ import { useState, useEffect } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
 import EmployeeManager from '@/app/components/EmployeeManager';
 
+type BarChartProps = {
+  data: { label: string; value: number; maxValue?: number }[];
+  title: string;
+  valueLabel: string;
+  color?: string;
+};
+
+function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-white p-4">
+        <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
+        <p className="text-sm text-gray-400 text-center py-8">No data available</p>
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <h3 className="text-sm font-medium text-gray-600 mb-4">{title}</h3>
+      <div className="flex items-end gap-2 h-40">
+        {data.slice(0, 12).map((item, i) => {
+          const height = (item.value / maxValue) * 100;
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full flex items-end justify-center h-32">
+                <div
+                  className="w-full max-w-8 rounded-t transition-all hover:opacity-80"
+                  style={{
+                    height: `${Math.max(height, item.value > 0 ? 2 : 0)}%`,
+                    minHeight: '4px',
+                    backgroundColor: color,
+                  }}
+                  title={`${item.label}: ${item.value} ${valueLabel}`}
+                />
+              </div>
+              <span className="text-[10px] text-gray-500 truncate max-w-full">{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex justify-between text-xs text-gray-400">
+        <span>0</span>
+        <span>{maxValue} {valueLabel}</span>
+      </div>
+    </div>
+  );
+}
+
 type Drink = {
   drinkid: number;
   name: string;
@@ -99,6 +150,20 @@ type XReportData = {
   totalProfit: number;
   hourlyBreakdown: { hour: number; order_count: number; total_sales: number }[];
 };
+
+function getMenuCardClass(category: string | null | undefined): string {
+  const cat = (category ?? 'other').toLowerCase();
+  const base = 'rounded-lg border-2 p-4 flex flex-col gap-1 group relative hover:shadow-md transition';
+  const categoryMap: Record<string, string> = {
+    'fruity': 'menu-fruity border-pink-400',
+    'milk tea': 'menu-milk-tea border-amber-400',
+    'signature': 'menu-signature border-violet-400',
+    'specialty': 'menu-specialty border-orange-400',
+    'tea': 'menu-tea border-emerald-400',
+    'other': 'menu-other border-stone-400',
+  };
+  return `${base} ${categoryMap[cat] ?? 'menu-other border-stone-400'}`;
+}
 
 type ZReportData = {
   alreadyRun: boolean;
@@ -600,7 +665,7 @@ export default function ManagerPage() {
                 <div
                   key={drink.drinkid}
                   onClick={() => openEditDrink(drink)}
-                  className="rounded-lg border-2 border-rose-400 p-4 flex flex-col gap-1 group relative bg-white hover:shadow-md transition"
+                  className={`${getMenuCardClass(drink.category)}`}
                 >
                   <span className="font-bold text-sm">{drink.name}</span>
                   <span className="text-gray-600 text-xs">Cost: ${Number(drink.cost).toFixed(2)}</span>
@@ -619,7 +684,7 @@ export default function ManagerPage() {
       )}
       {view === 'employees' && <EmployeeManager />}
       {view === 'reports' && (
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-6">
           <div className="flex justify-end">
             <button
               onClick={fetchReports}
@@ -629,7 +694,9 @@ export default function ManagerPage() {
               {reportsLoading ? 'Loading...' : 'Refresh'}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+
+          {/* Weekly Sales - Table on left, Chart on right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportTable
               title="Weekly Sales History"
               rows={reports.weekly}
@@ -638,6 +705,19 @@ export default function ManagerPage() {
                 { key: 'orders_in_week', label: 'Orders' },
               ]}
             />
+            <BarChart
+              title="Weekly Orders"
+              valueLabel="orders"
+              color="#40c4ff"
+              data={reports.weekly.map(r => ({
+                label: r.week ? String(r.week).slice(0, 7) : 'N/A',
+                value: Number(r.orders_in_week) || 0,
+              }))}
+            />
+          </div>
+
+          {/* Peak Sales - Table on left, Chart on right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportTable
               title="Peak Sales Days"
               rows={reports.peakDays}
@@ -646,6 +726,19 @@ export default function ManagerPage() {
                 { key: 'daily_sales', label: 'Sales', format: 'currency' },
               ]}
             />
+            <BarChart
+              title="Peak Sales Days"
+              valueLabel="sales"
+              color="#50fa7b"
+              data={reports.peakDays.slice(0, 12).map(r => ({
+                label: r.date ? String(r.date).slice(5, 10) : 'N/A',
+                value: Math.round(Number(r.daily_sales) || 0),
+              }))}
+            />
+          </div>
+
+          {/* Hourly Sales - Table on left, Chart on right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportTable
               title="Hourly Sales"
               rows={reports.hourly}
@@ -655,6 +748,19 @@ export default function ManagerPage() {
                 { key: 'total_sales', label: 'Sales', format: 'currency' },
               ]}
             />
+            <BarChart
+              title="Hourly Distribution"
+              valueLabel="orders"
+              color="#ffb347"
+              data={reports.hourly.map(r => ({
+                label: r.hour !== undefined ? (Number(r.hour) === 0 ? '12a' : Number(r.hour) < 12 ? `${r.hour}a` : Number(r.hour) === 12 ? '12p' : `${Number(r.hour) - 12}p`) : 'N/A',
+                value: Number(r.order_count) || 0,
+              }))}
+            />
+          </div>
+
+          {/* Menu Items - Table on left, Chart on right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportTable
               title="Menu Item Ingredient Count"
               rows={reports.menuInventory}
@@ -662,6 +768,15 @@ export default function ManagerPage() {
                 { key: 'drink_name', label: 'Drink' },
                 { key: 'ingredient_count', label: 'Ingredients' },
               ]}
+            />
+            <BarChart
+              title="Top Menu Items"
+              valueLabel="ingredients"
+              color="#b388ff"
+              data={reports.menuInventory.slice(0, 8).map(r => ({
+                label: String(r.drink_name).slice(0, 10),
+                value: Number(r.ingredient_count) || 0,
+              }))}
             />
           </div>
         </div>

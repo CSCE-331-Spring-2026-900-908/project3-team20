@@ -101,9 +101,12 @@ export default function CashierPage() {
     };
 
     const categoryColors: Record<string, string> = {
-        'fruity':   'bg-pink-100 border-pink-300 hover:bg-pink-200',
-        'milk tea': 'bg-amber-100 border-amber-300 hover:bg-amber-200',
-        'other':    'bg-gray-100  border-gray-300  hover:bg-gray-200',
+        'fruity':    'bg-pink-100 border-pink-300 hover:bg-pink-200',
+        'milk tea':  'bg-amber-100 border-amber-300 hover:bg-amber-200',
+        'signature': 'bg-violet-100 border-violet-300 hover:bg-violet-200',
+        'specialty': 'bg-orange-100 border-orange-300 hover:bg-orange-200',
+        'tea':       'bg-emerald-100 border-emerald-300 hover:bg-emerald-200',
+        'other':     'bg-gray-100 border-gray-300 hover:bg-gray-200',
     };
 
     const getCardColor = (category: string) =>

@@ -155,6 +155,7 @@ export default function ManagerPage() {
   const [showAddDrinkDialog, setShowAddDrinkDialog] = useState(false);
   const [addDrinkName, setAddDrinkName] = useState('');
   const [addDrinkCost, setAddDrinkCost] = useState('');
+  const [addDrinkCategory, setAddDrinkCategory] = useState('');
   const [addDrinkError, setAddDrinkError] = useState('');
   const [deleteDrinkTarget, setDeleteDrinkTarget] = useState<Drink | null>(null);
   const [recipeRows, setRecipeRows] = useState<RecipeRow[]>([{ ingredientid: 0, amount: 0 }]);
@@ -162,6 +163,7 @@ export default function ManagerPage() {
   const [editDrinkTarget, setEditDrinkTarget] = useState<Drink | null>(null);
   const [editDrinkName, setEditDrinkName] = useState('');
   const [editDrinkCost, setEditDrinkCost] = useState('');
+  const [editDrinkCategory, setEditDrinkCategory] = useState('');
   const [editDrinkRecipeRows, setEditDrinkRecipeRows] = useState<RecipeRow[]>([]);
   const [editDrinkError, setEditDrinkError] = useState('');
 
@@ -261,6 +263,7 @@ export default function ManagerPage() {
       body: JSON.stringify({
         name: addDrinkName.trim(),
         cost: costVal,
+        category: addDrinkCategory,
         recipes: recipeRows,
       }),
     });
@@ -268,6 +271,7 @@ export default function ManagerPage() {
     setShowAddDrinkDialog(false);
     setAddDrinkName('');
     setAddDrinkCost('');
+    setAddDrinkCategory('');
     setRecipeRows([{ ingredientid: 0, amount: 0 }]);
     fetchDrinks();
   };
@@ -286,6 +290,7 @@ export default function ManagerPage() {
   const openEditDrink = async (drink: Drink) => {
     setEditDrinkName(drink.name);
     setEditDrinkCost(String(drink.cost));
+    setEditDrinkCategory(drink.category ?? '');
     setEditDrinkError('');
     setEditDrinkRecipeRows([]);
     const res = await fetch(`/api/drinks?drinkid=${drink.drinkid}`);
@@ -313,6 +318,7 @@ export default function ManagerPage() {
         drinkid: editDrinkTarget.drinkid,
         name: editDrinkName.trim(),
         cost: costVal,
+        category: editDrinkCategory,
         recipes: editDrinkRecipeRows,
       }),
     });
@@ -454,7 +460,7 @@ export default function ManagerPage() {
         )}
         {view === 'menu' && (
           <button
-            onClick={() => { setAddDrinkName(''); setAddDrinkCost(''); setAddDrinkError(''); setShowAddDrinkDialog(true); }}
+            onClick={() => { setAddDrinkName(''); setAddDrinkCost(''); setAddDrinkCategory(''); setAddDrinkError(''); setShowAddDrinkDialog(true); }}
             className="px-4 py-2 text-sm rounded bg-rose-500 text-white hover:bg-rose-600"
           >
             Add Drink
@@ -676,6 +682,21 @@ export default function ManagerPage() {
                   placeholder="0.00" className="w-full border rounded px-3 py-2 text-sm" />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={addDrinkCategory}
+                  onChange={e => setAddDrinkCategory(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                >
+                  <option value="">Select category</option>
+                  <option value="Fruity">Fruity</option>
+                  <option value="Milk Tea">Milk Tea</option>
+                  <option value="Signature">Signature</option>
+                  <option value="Specialty">Specialty</option>
+                  <option value="Tea">Tea</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>
                 <div className="space-y-2">
                   {recipeRows.map((row, i) => (
@@ -875,6 +896,21 @@ export default function ManagerPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
                 <input type="text" value={editDrinkCost} onChange={e => setEditDrinkCost(e.target.value)}
                   placeholder="0.00" className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={editDrinkCategory}
+                  onChange={e => setEditDrinkCategory(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                >
+                  <option value="">Select category</option>
+                  <option value="Fruity">Fruity</option>
+                  <option value="Milk Tea">Milk Tea</option>
+                  <option value="Signature">Signature</option>
+                  <option value="Specialty">Specialty</option>
+                  <option value="Tea">Tea</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>

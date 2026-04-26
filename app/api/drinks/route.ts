@@ -32,7 +32,7 @@ export async function PUT(request: Request) {
     await client.query('BEGIN');
 
     await client.query(
-      'UPDATE drinks SET name = $1, cost = $2 WHERE drinkid = $3',
+      'UPDATE drinks SET name = $1, cost = $2, category = $3 WHERE drinkid = $4',
       [name, cost, drinkid]
     );
 

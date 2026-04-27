@@ -1,0 +1,119 @@
+SPRINT 3 - MEETING 3
+====================
+Prepared by: Cannon Cavazos
+Meeting Date: 4/26/2026
+
+Attendees
+---------
+Ahmet Asim Aykanat, Cannon Cavazos, Wyatt Voigt, Omer Aslan, Prathinav Allena
+
+Agenda
+------
+1. Present our powerpoint
+2. Determine any final additions we want to make
+Accomplishments
+---------------
+-Completed Power Point Presentation
+
+Tasks Completed
+---------------
+1.  Spin the Wheel Feature — Ahmet                                      COMPLETED
+    Implement spin-the-wheel feature.
+
+2.  Edit Drinks in Checkout Tab — Omer                                  COMPLETED
+    Allow editing drinks during checkout.
+
+3.  Employee PIN Feature — Omer                                         COMPLETED
+    Add PIN system for employee access.
+
+4.  Menu Item Add/Drop — Ingredient Interaction                         COMPLETED
+    Add and remove ingredients from menu items.
+
+5.  Google OAuth Login + PIN for Manager — Cashier, Manager             COMPLETED
+    Implement Google OAuth login with PIN support for manager access.
+
+6.  Text to Speech — All Portals                                        COMPLETED
+    Add text-to-speech functionality across all portals.
+
+7.  Weather API — Customer Kiosk                                        COMPLETED
+    Integrate weather API into the customer kiosk. (Wyatt, Sprint 3)
+
+8.  Bigger Text with Color Contrast — Vishnu                            COMPLETED
+    Improve accessibility with larger text and better color contrast.
+
+9.  Send Notification to Email                                          COMPLETED
+    Send email notifications for relevant events.
+
+11. Translation — Fix Missing Labels                                    COMPLETED
+    Resolve labels missed by the translation API.
+
+12. Easy Way to Edit Drinks in Checkout Tab                             COMPLETED
+    Streamline drink editing during checkout.
+
+13. Edit Drinks for Manager (Add, Subtract, Seasonal)                  COMPLETED
+    Allow managers to add, subtract, and manage seasonal drinks.
+
+14. Happy Hour Time Change — ASK TAELE/PRATH                           COMPLETED
+    Update happy hour to demo times: 8am–12pm.
+
+15. Employee Management — Manager                                       COMPLETED
+    Add and delete employees from the manager portal.
+
+16. Generate Clean Images for Customer & Menu Portals                  COMPLETED
+    Produce polished images for use across customer and menu interfaces.
+
+17. Fix Drink Categorization on Menu                                    COMPLETED
+    Correct drink category assignments on the menu.
+
+Tasks
+-----
+ 1. Menu Item Add/Drop — Cannon                              COMPLETED
+    Implement functionality to add and remove menu items.
+
+ 2. Text to Speech — Prathinav                              COMPLETED
+    Add accessibility feature for reading text aloud.
+
+ 3. Backend Update to Restore Item — Ahmet
+    Fix backend to properly restore removed items.
+
+ 4. Weather API — Wyatt                                     COMPLETED
+    Integrate weather API into application.
+
+ 5. Moving Menu Background — Ahmet                          COMPLETED
+    Add animated background to menu screen.
+
+ 6. Drink Images (Employee/Manager View) — Cannon           COMPLETED
+    Add images for drinks in employee and manager interfaces.
+
+ 7. Show Recent Orders — Cannon
+    Display recent orders in system.
+
+ 8. Improved Text Size & Contrast — Prathinav               COMPLETED
+    Enhance readability with larger text and better contrast.
+
+ 9. Spin the Wheel Feature — Ahmet                          COMPLETED
+    Implement spin-the-wheel feature.
+
+10. Email Notifications — Omer                              COMPLETED
+    Send notifications via email.
+
+11. Fix Translation Label Issues — Wyatt                    COMPLETED
+    Correct missing labels in translation feature.
+
+12. Edit Drinks in Checkout Tab — Omer                      COMPLETED
+    Allow editing drinks during checkout.
+
+13. Employee PIN Feature — Omer                             COMPLETED
+    Add PIN system for employee access.
+
+14. Manager Drink Editing — Cannon                          COMPLETED
+    Enable drink editing in manager view.
+
+15. Employee Management — Prathinav                         COMPLETED
+    Implement employee management functionality.
+
+Minutes
+-------
+- Discussed anything we missed before our final demo
+- Added a few updates to the final presentation
+- Recorded our final presentation video

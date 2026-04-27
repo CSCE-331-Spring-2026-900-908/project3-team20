@@ -140,12 +140,12 @@ export default function MenuBoardPage() {
                       </div>
 
                       {/* Drink name */}
-                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 max-h-14 overflow-hidden">
+                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2">
                         {drink.name}
                       </p>
 
                       {/* Price */}
-                      <p className={`text-2xl font-bold ${cfg.text}`}>
+                      <p className={`text-2xl font-bold ${cfg.text} mt-auto`}>
                         ${Number(drink.cost).toFixed(2)}
                       </p>
                     </div>
@@ -184,12 +184,12 @@ export default function MenuBoardPage() {
                       </div>
 
                       {/* Drink name */}
-                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 max-h-14 overflow-hidden">
+                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2">
                         {drink.name}
                       </p>
 
                       {/* Price */}
-                      <p className={`text-2xl font-bold ${cfg.text}`}>
+                      <p className={`text-2xl font-bold ${cfg.text} mt-auto`}>
                         ${Number(drink.cost).toFixed(2)}
                       </p>
                     </div>

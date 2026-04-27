@@ -1,5 +1,5 @@
-export const HAPPY_HOUR_START = 18; // 6:00 PM
-export const HAPPY_HOUR_END = 20;   // 8:00 PM
+export const HAPPY_HOUR_START = 9;  // 9:00 AM
+export const HAPPY_HOUR_END = 12;   // 12:00 PM
 export const HAPPY_HOUR_DISCOUNT_PCT = 20; // 20% off drinks
 
 export function isHappyHour(hour: number): boolean {

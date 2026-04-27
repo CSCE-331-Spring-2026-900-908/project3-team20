@@ -30,7 +30,7 @@ function buildDrinkAnnouncement(drink: Drink, isHappyHour: boolean) {
   const currentPrice = isHappyHour ? regularPrice * DISCOUNT : regularPrice;
   const categoryText = drink.category ? `${drink.category}. ` : '';
   const priceText = isHappyHour
-    ? `Happy hour price ${formatCurrency(currentPrice)}, reduced from ${formatCurrency(regularPrice)}.`
+    ? `Early bird special price ${formatCurrency(currentPrice)}, reduced from ${formatCurrency(regularPrice)}.`
     : `Price ${formatCurrency(currentPrice)}.`;
 
   return `${drink.name}. ${categoryText}${priceText} Use the plus button to customize it and add it to your order.`;
@@ -44,7 +44,7 @@ function buildCustomizationAnnouncement(
   const regularPrice = Number(drink.cost);
   const currentPrice = isHappyHour ? regularPrice * DISCOUNT : regularPrice;
   const priceText = isHappyHour
-    ? `${drink.name}. Happy hour price ${formatCurrency(currentPrice)}, regular price ${formatCurrency(regularPrice)}.`
+    ? `${drink.name}. Early bird special price ${formatCurrency(currentPrice)}, regular price ${formatCurrency(regularPrice)}.`
     : `${drink.name}. Price ${formatCurrency(currentPrice)}.`;
   const sweetnessText = `Sweetness options are ${SWEETNESS_OPTIONS.join(', ')}.`;
   const iceText = `Ice options are ${ICE_OPTIONS.join(', ')}. If you choose hot, ice will automatically be set to none.`;
@@ -74,7 +74,7 @@ function buildFullMenuSections(
   });
 
   const intro = isHappyHour
-    ? `Welcome to the customer kiosk. Happy hour is active, so all drinks are ${HAPPY_HOUR_DISCOUNT_PCT} percent off right now. I will read the full menu by category.`
+    ? `Welcome to the customer kiosk. Early bird special is active, so all drinks are ${HAPPY_HOUR_DISCOUNT_PCT} percent off right now. I will read the full menu by category.`
     : 'Welcome to the customer kiosk. I will read the full menu by category.';
 
   const categorySections = Array.from(drinksByCategory.entries()).map(([category, categoryDrinks]) => {
@@ -82,7 +82,7 @@ function buildFullMenuSections(
       .map((drink) => {
         const regularPrice = Number(drink.cost);
         if (isHappyHour) {
-          return `${drink.name}, happy hour price ${formatCurrency(regularPrice * DISCOUNT)}, regular price ${formatCurrency(regularPrice)}.`;
+          return `${drink.name}, early bird special price ${formatCurrency(regularPrice * DISCOUNT)}, regular price ${formatCurrency(regularPrice)}.`;
         }
 
         return `${drink.name}, ${formatCurrency(regularPrice)}.`;
@@ -224,7 +224,7 @@ export default function CustomerPage() {
       .map((item) => `${item.quantity} ${item.drink.name}`)
       .join(', ');
     const savingsText = isHappyHour && cartSavings > 0
-      ? `You are saving ${formatCurrency(cartSavings)} during happy hour.`
+      ? `You are saving ${formatCurrency(cartSavings)} during the early bird special.`
       : '';
 
     speak(
@@ -360,11 +360,11 @@ export default function CustomerPage() {
               <span>🧋</span>
               <span className="hidden sm:inline">
                 {isHappyHour
-                  ? `Happy Hour — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
-                  : `Happy Hour 6–8 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
+                  ? `Early Bird Special — ${HAPPY_HOUR_DISCOUNT_PCT}% OFF NOW!`
+                  : `Early Bird Special 9 AM–12 PM · ${HAPPY_HOUR_DISCOUNT_PCT}% off`}
               </span>
               <span className="sm:hidden">
-                {isHappyHour ? `${HAPPY_HOUR_DISCOUNT_PCT}% OFF!` : `HH 6–8 PM`}
+                {isHappyHour ? `${HAPPY_HOUR_DISCOUNT_PCT}% OFF!` : `EBS 9–12 PM`}
               </span>
             </div>
             <WeatherWidget />
@@ -376,7 +376,7 @@ export default function CustomerPage() {
         {isHappyHour && (
           <div className="bg-amber-400 border-b border-amber-500 px-3 sm:px-6 py-2 sm:py-3 text-center">
             <p className="text-amber-950 font-bold text-sm sm:text-lg tracking-wide">
-              Happy Hour is ON! All drinks {HAPPY_HOUR_DISCOUNT_PCT}% off until 8 PM
+              Early Bird Special is ON! All drinks {HAPPY_HOUR_DISCOUNT_PCT}% off until 12 PM
             </p>
             <p className="text-amber-800 text-xs sm:text-sm">Discounted prices shown below</p>
           </div>
@@ -760,7 +760,7 @@ function CustomizeModal({
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-sm text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
                   <span className="text-lg font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
-                  <span className="text-xs text-amber-600">Happy Hour price</span>
+                  <span className="text-xs text-amber-600">Early Bird Special price</span>
                 </div>
               ) : (
                 <p className="text-gray-600 mt-0.5">${Number(drink.cost).toFixed(2)}</p>

@@ -4,70 +4,62 @@ import { ComponentPropsWithoutRef, PointerEvent, useEffect, useMemo, useRef, use
 import { createPortal } from 'react-dom';
 import { useFloatingKeyboardEnabled } from './useFloatingKeyboardEnabled';
 
-type NumericKeyboardAction = 'backspace' | 'clear' | 'hide';
+type TextKeyboardAction = 'backspace' | 'clear' | 'hide' | 'space' | 'send';
 
-interface NumericKey {
+interface TextKey {
   label: string;
   value?: string;
-  action?: NumericKeyboardAction;
+  action?: TextKeyboardAction;
+  wide?: boolean;
   tone?: 'default' | 'muted' | 'primary';
 }
 
-interface FloatingNumericInputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange'> {
+interface FloatingTextInputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange'> {
   value: string;
   onValueChange: (value: string) => void;
+  onSubmit?: () => void;
 }
 
-function sanitizeNumericValue(value: string) {
-  const digitsAndDots = value.replace(/[^0-9.]/g, '');
-  const [whole = '', ...decimalParts] = digitsAndDots.split('.');
+const LETTER_ROWS = [
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+] as const;
 
-  if (decimalParts.length === 0) {
-    return whole;
-  }
+const NUMBER_ROW = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const;
 
-  return `${whole || '0'}.${decimalParts.join('').slice(0, 2)}`;
-}
-
-function getKeyboardRows(): NumericKey[][] {
+function getKeyboardRows(): TextKey[][] {
   return [
+    NUMBER_ROW.map((value) => ({ label: value, value })),
+    LETTER_ROWS[0].map((value) => ({ label: value, value })),
+    LETTER_ROWS[1].map((value) => ({ label: value, value })),
     [
-      { label: '1', value: '1' },
-      { label: '2', value: '2' },
-      { label: '3', value: '3' },
-      { label: 'Back', action: 'backspace', tone: 'muted' },
+      ...LETTER_ROWS[2].map((value) => ({ label: value, value })),
+      { label: '?', value: '?' },
+      { label: 'Back', action: 'backspace', wide: true, tone: 'muted' },
     ],
     [
-      { label: '4', value: '4' },
-      { label: '5', value: '5' },
-      { label: '6', value: '6' },
-      { label: 'Clear', action: 'clear', tone: 'muted' },
-    ],
-    [
-      { label: '7', value: '7' },
-      { label: '8', value: '8' },
-      { label: '9', value: '9' },
-      { label: 'Hide', action: 'hide', tone: 'primary' },
-    ],
-    [
-      { label: '0', value: '0' },
+      { label: ',', value: ',' },
       { label: '.', value: '.' },
-      { label: '00', value: '00' },
-      { label: '5.00', value: '5.00' },
+      { label: "'", value: "'" },
+      { label: 'Space', action: 'space', wide: true },
+      { label: 'Clear', action: 'clear', wide: true, tone: 'muted' },
+      { label: 'Send', action: 'send', wide: true, tone: 'primary' },
     ],
   ];
 }
 
-export function FloatingNumericInput({
+export function FloatingTextInput({
   value,
   onValueChange,
+  onSubmit,
   onFocus,
   onClick,
   onKeyDown,
   className,
   disabled,
   ...inputProps
-}: FloatingNumericInputProps) {
+}: FloatingTextInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const keyboardRef = useRef<HTMLDivElement>(null);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -109,9 +101,8 @@ export function FloatingNumericInput({
   };
 
   const updateValue = (nextValue: string, nextCursor: number) => {
-    const sanitizedValue = sanitizeNumericValue(nextValue);
-    onValueChange(sanitizedValue);
-    focusAt(Math.min(nextCursor, sanitizedValue.length));
+    onValueChange(nextValue);
+    focusAt(Math.min(nextCursor, nextValue.length));
   };
 
   const insertText = (text: string) => {
@@ -136,26 +127,33 @@ export function FloatingNumericInput({
     event.preventDefault();
   };
 
-  const handleKeyPress = (key: NumericKey) => {
+  const handleKeyPress = (key: TextKey) => {
     if (key.value) {
       insertText(key.value);
       return;
     }
 
-    if (key.action === 'backspace') {
-      backspace();
-      return;
-    }
-
-    if (key.action === 'clear') {
-      onValueChange('');
-      focusAt(0);
-      return;
-    }
-
-    if (key.action === 'hide') {
-      setIsKeyboardOpen(false);
-      inputRef.current?.blur();
+    switch (key.action) {
+      case 'backspace':
+        backspace();
+        break;
+      case 'clear':
+        onValueChange('');
+        focusAt(0);
+        break;
+      case 'hide':
+        setIsKeyboardOpen(false);
+        inputRef.current?.blur();
+        break;
+      case 'space':
+        insertText(' ');
+        break;
+      case 'send':
+        onSubmit?.();
+        focusAt(0);
+        break;
+      default:
+        break;
     }
   };
 
@@ -163,14 +161,14 @@ export function FloatingNumericInput({
     ? createPortal(
         <div
           ref={keyboardRef}
-          className="fixed bottom-3 right-3 z-[90] w-[calc(100vw-1.25rem)] max-w-[18rem] rounded-[1.2rem] border border-stone-300 bg-white p-3 shadow-[0_24px_55px_rgba(15,23,42,0.24)] sm:bottom-4 sm:right-4"
+          className="fixed bottom-3 right-3 z-[90] w-[calc(100vw-1.25rem)] max-w-[34rem] rounded-[1.35rem] border border-stone-300 bg-white p-3 shadow-[0_24px_55px_rgba(15,23,42,0.24)] sm:bottom-4 sm:right-4"
         >
           <div className="mb-2.5 flex items-center justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-                Tip Keypad
+                Chat Keyboard
               </p>
-              <p className="text-xs text-stone-600">Enter a custom tip amount.</p>
+              <p className="text-xs text-stone-600 sm:text-sm">Type a message for the AI assistant.</p>
             </div>
             <button
               type="button"
@@ -187,7 +185,15 @@ export function FloatingNumericInput({
 
           <div className="space-y-1.5">
             {keyboardRows.map((row, rowIndex) => (
-              <div key={`numeric-row-${rowIndex}`} className="grid grid-cols-4 gap-1.5">
+              <div
+                key={`text-row-${rowIndex}`}
+                className="grid gap-1.5"
+                style={{
+                  gridTemplateColumns: row
+                    .map((key) => `minmax(0, ${key.wide ? '1.75fr' : '1fr'})`)
+                    .join(' '),
+                }}
+              >
                 {row.map((key) => {
                   const toneClasses =
                     key.tone === 'primary'
@@ -202,7 +208,7 @@ export function FloatingNumericInput({
                       type="button"
                       onPointerDown={preventBlur}
                       onClick={() => handleKeyPress(key)}
-                      className={`min-h-10 rounded-xl border px-2 py-2 text-sm font-semibold transition active:translate-y-px sm:min-h-11 ${toneClasses}`}
+                      className={`min-h-10 rounded-xl border px-2 py-2 text-sm font-semibold transition active:translate-y-px sm:min-h-11 sm:px-2.5 sm:text-[15px] ${toneClasses}`}
                     >
                       {key.label}
                     </button>
@@ -222,11 +228,10 @@ export function FloatingNumericInput({
         {...inputProps}
         ref={inputRef}
         type="text"
-        inputMode="decimal"
         disabled={disabled}
         value={value}
         className={className}
-        onChange={(event) => onValueChange(sanitizeNumericValue(event.target.value))}
+        onChange={(event) => onValueChange(event.target.value)}
         onFocus={(event) => {
           if (floatingKeyboardEnabled) {
             setIsKeyboardOpen(true);

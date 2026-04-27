@@ -7,6 +7,7 @@ import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib
 import { useTextToSpeech } from '@/lib/useTextToSpeech';
 import { FloatingEmailInput } from '../components/FloatingEmailInput';
 import { FloatingNumericInput } from '../components/FloatingNumericInput';
+import { FloatingTextInput } from '../components/FloatingTextInput';
 import { SpeakButton } from '../components/SpeakButton';
 import WeatherWidget from '../components/WeatherWidget';
 
@@ -1344,10 +1345,11 @@ function ChatMessages() {
       </div>
 
       <div className="border-t p-2 flex gap-2 shrink-0">
-        <input
-          type="text"
+        <FloatingTextInput
+          aria-label="Ask the AI assistant a question"
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onValueChange={setInput}
+          onSubmit={send}
           onKeyDown={e => e.key === 'Enter' && send()}
           placeholder="Ask a question..."
           className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"

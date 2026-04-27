@@ -2,6 +2,7 @@
 
 import { ComponentPropsWithoutRef, PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useFloatingKeyboardEnabled } from './useFloatingKeyboardEnabled';
 
 type EmailKeyboardAction = 'backspace' | 'clear' | 'hide';
 
@@ -65,9 +66,10 @@ export function FloatingEmailInput({
   const keyboardRef = useRef<HTMLDivElement>(null);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const keyboardRows = useMemo(() => getKeyboardRows(), []);
+  const floatingKeyboardEnabled = useFloatingKeyboardEnabled();
 
   useEffect(() => {
-    if (!isKeyboardOpen) return;
+    if (!isKeyboardOpen || !floatingKeyboardEnabled) return;
 
     const handlePointerDown = (event: globalThis.PointerEvent) => {
       const target = event.target as Node;
@@ -79,7 +81,7 @@ export function FloatingEmailInput({
 
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [isKeyboardOpen]);
+  }, [floatingKeyboardEnabled, isKeyboardOpen]);
 
   const getSelection = () => {
     const input = inputRef.current;
@@ -151,7 +153,7 @@ export function FloatingEmailInput({
     }
   };
 
-  const keyboard = typeof document !== 'undefined' && isKeyboardOpen && !disabled
+  const keyboard = typeof document !== 'undefined' && floatingKeyboardEnabled && isKeyboardOpen && !disabled
     ? createPortal(
         <div
           ref={keyboardRef}
@@ -231,11 +233,15 @@ export function FloatingEmailInput({
         className={className}
         onChange={(event) => onValueChange(sanitizeEmailValue(event.target.value))}
         onFocus={(event) => {
-          setIsKeyboardOpen(true);
+          if (floatingKeyboardEnabled) {
+            setIsKeyboardOpen(true);
+          }
           onFocus?.(event);
         }}
         onClick={(event) => {
-          setIsKeyboardOpen(true);
+          if (floatingKeyboardEnabled) {
+            setIsKeyboardOpen(true);
+          }
           onClick?.(event);
         }}
         onKeyDown={(event) => {

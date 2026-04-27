@@ -413,7 +413,7 @@ export default function CustomerPage() {
         </div>
 
         {/* Drink grid */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6 pb-28">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 pb-40 sm:pb-36">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {filteredDrinks.map(drink => (
               <div

@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
 import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
 import { useTextToSpeech } from '@/lib/useTextToSpeech';
+import { FloatingEmailInput } from '../components/FloatingEmailInput';
+import { FloatingNumericInput } from '../components/FloatingNumericInput';
 import { SpeakButton } from '../components/SpeakButton';
 import WeatherWidget from '../components/WeatherWidget';
 
@@ -1172,13 +1174,14 @@ function UpsellModal({
           </div>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs text-gray-500 whitespace-nowrap">Custom $</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
+            <FloatingNumericInput
+              aria-label="Custom tip amount"
               placeholder="0.00"
               value={customTip}
-              onChange={e => { setCustomTip(e.target.value); setTipPct(null); }}
+              onValueChange={(nextValue) => {
+                setCustomTip(nextValue);
+                setTipPct(null);
+              }}
               className="flex-1 border rounded-lg px-2 py-1.5 text-sm"
             />
           </div>
@@ -1207,12 +1210,11 @@ function UpsellModal({
           </label>
           {wantEmail && (
             <>
-              <input
-                type="email"
-                inputMode="email"
-                autoComplete="email"
+              <FloatingEmailInput
+                autoFocus
+                aria-label="Receipt email address"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onValueChange={setEmail}
                 placeholder="you@example.com"
                 className={`mt-2 w-full border rounded-lg px-3 py-2 text-sm ${emailError ? 'border-red-400' : ''}`}
               />

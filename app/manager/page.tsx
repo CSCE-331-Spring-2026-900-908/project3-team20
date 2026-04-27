@@ -13,6 +13,8 @@ type BarChartProps = {
 };
 
 function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   if (!data || data.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -27,12 +29,17 @@ function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps)
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <h3 className="text-sm font-medium text-gray-600 mb-4">{title}</h3>
-      <div className="flex items-end gap-2 h-40">
+      <div className="relative flex items-end gap-2 h-40">
         {data.slice(0, 12).map((item, i) => {
           const height = (item.value / maxValue) * 100;
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex items-end justify-center h-32">
+            <div
+              key={i}
+              className="flex-1 flex flex-col items-center gap-1"
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <div className="w-full flex items-end justify-center h-32 relative">
                 <div
                   className="w-full max-w-8 rounded-t transition-all hover:opacity-80"
                   style={{
@@ -40,8 +47,12 @@ function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps)
                     minHeight: '4px',
                     backgroundColor: color,
                   }}
-                  title={`${item.label}: ${item.value} ${valueLabel}`}
                 />
+                {hoveredIndex === i && (
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                    {item.value} {valueLabel}
+                  </div>
+                )}
               </div>
               <span className="text-[10px] text-gray-500 truncate max-w-full">{item.label}</span>
             </div>

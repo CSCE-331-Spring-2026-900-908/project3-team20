@@ -69,6 +69,38 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
   const isManager = targetRole === "manager";
   const isCashier = targetRole === "cashier";
 
+  const handlePinButton = (digit: string) => {
+    if (pin.length < 8) {
+      setPin((prev) => prev + digit);
+      setPinError("");
+    }
+  };
+
+  const handlePinKeyDown = (e: KeyboardEvent) => {
+    const key = e.key;
+    if ((key >= '0' && key <= '9') || (key >= 'Numpad0' && key <= 'Numpad9')) {
+      const digit = key.replace('Numpad', '');
+      handlePinButton(digit);
+    } else if (key === 'Backspace') {
+      setPin((prev) => prev.slice(0, -1));
+    } else if (key === 'Enter') {
+      document.getElementById('pin-submit-btn')?.click();
+    }
+  };
+
+  const handleClear = () => {
+    setPin("");
+    setPinError("");
+  };
+
+  // Global keyboard listener for PIN input
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => handlePinKeyDown(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, pin]);
+
   // Load Google Identity Services script and initialize GIS when manager modal opens
   useEffect(() => {
     if (!isManager) return;
@@ -155,18 +187,33 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
 
   if (!isOpen) return null;
 
-  // ---- CASHIER: single centered card (unchanged layout from before) ----
+  // ---- CASHIER: single centered card with 3x3 PIN pad ----
   if (isCashier) {
+    const pinButtons = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-stone-900">Cashier Login</h2>
             <button onClick={onClose} className="text-2xl text-stone-400 hover:text-stone-600">×</button>
           </div>
           <form onSubmit={handlePinSubmit} className="space-y-4">
             <div>
-              <label htmlFor="pin" className="block text-sm font-medium text-stone-700">PIN</label>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Enter PIN</label>
+              {/* PIN display */}
+              <div className="flex justify-center gap-3 mb-4">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-12 h-14 rounded-lg border-2 flex items-center justify-center text-2xl font-bold transition-colors ${
+                      pin.length > i ? 'border-amber-500 bg-amber-50' : 'border-stone-300 bg-white'
+                    }`}
+                  >
+                    {pin.length > i ? '●' : ''}
+                  </div>
+                ))}
+              </div>
+              {/* Hidden input - keeps browser happy but we use global keyboard listener */}
               <input
                 id="pin"
                 type="password"
@@ -174,14 +221,43 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
                 autoComplete="one-time-code"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-                required autoFocus
+                className="sr-only"
+                required
               />
+              {/* 3x3 PIN pad */}
+              <div className="grid grid-cols-3 gap-3">
+                {pinButtons.map((btn, i) => {
+                  if (btn === '') return <div key={i} />;
+                  if (btn === '⌫') {
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={handleClear}
+                        className="h-14 rounded-xl border border-stone-300 bg-stone-100 text-lg font-semibold text-stone-600 hover:bg-stone-200 active:bg-stone-300 transition"
+                      >
+                        ⌫
+                      </button>
+                    );
+                  }
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handlePinButton(btn)}
+                      className="h-14 rounded-xl border border-stone-300 bg-white text-xl font-semibold hover:bg-amber-50 active:bg-amber-100 transition"
+                    >
+                      {btn}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             {pinError && <p className="text-sm text-red-600">{pinError}</p>}
             <button
+              id="pin-submit-btn"
               type="submit"
-              disabled={pinLoading}
+              disabled={pinLoading || pin.length < 4}
               className="w-full rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
             >
               {pinLoading ? "Signing in..." : "Sign In"}
@@ -194,6 +270,7 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
 
   // ---- MANAGER: two side-by-side cards ----
   if (isManager) {
+    const pinButtons = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-2xl">
@@ -202,14 +279,26 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
             <button onClick={onClose} className="text-2xl text-stone-400 hover:text-stone-600">×</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Left card — PIN Login */}
+            {/* Left card — PIN Login with 3x3 pad */}
             <div className="rounded-xl border border-stone-200 bg-stone-50 p-6">
               <h3 className="text-lg font-semibold text-stone-800 mb-4">Sign in with PIN</h3>
               <form onSubmit={handlePinSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="manager-pin" className="block text-sm font-medium text-stone-700">
-                    Employee ID (PIN)
-                  </label>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">Employee ID (PIN)</label>
+                  {/* PIN display */}
+                  <div className="flex justify-center gap-2 mb-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-10 h-12 rounded-lg border-2 flex items-center justify-center text-xl font-bold transition-colors ${
+                          pin.length > i ? 'border-amber-500 bg-amber-50' : 'border-stone-300 bg-white'
+                        }`}
+                      >
+                        {pin.length > i ? '●' : ''}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Hidden input - keeps browser happy but we use global keyboard listener */}
                   <input
                     id="manager-pin"
                     type="password"
@@ -217,14 +306,43 @@ function LoginModal({ isOpen, onClose, targetHref, targetRole }: LoginModalProps
                     autoComplete="one-time-code"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-stone-300 px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-                    required autoFocus
+                    className="sr-only"
+                    required
                   />
+                  {/* 3x3 PIN pad */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {pinButtons.map((btn, i) => {
+                      if (btn === '') return <div key={i} />;
+                      if (btn === '⌫') {
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={handleClear}
+                            className="h-12 rounded-xl border border-stone-300 bg-stone-100 text-base font-semibold text-stone-600 hover:bg-stone-200 active:bg-stone-300 transition"
+                          >
+                            ⌫
+                          </button>
+                        );
+                      }
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handlePinButton(btn)}
+                          className="h-12 rounded-xl border border-stone-300 bg-white text-lg font-semibold hover:bg-amber-50 active:bg-amber-100 transition"
+                        >
+                          {btn}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 {pinError && <p className="text-sm text-red-600">{pinError}</p>}
                 <button
+                  id="pin-submit-btn"
                   type="submit"
-                  disabled={pinLoading}
+                  disabled={pinLoading || pin.length < 4}
                   className="w-full rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
                 >
                   {pinLoading ? "Signing in..." : "Sign In"}

@@ -1364,58 +1364,67 @@ export default function ManagerPage() {
 
           {zReportData && !zReportLoading && (
             <>
-              {zReportData.alreadyRun ? (
-                <p className="text-sm text-gray-500 text-center py-6">
-                  Z report has already been run for today. Come back tomorrow.
+
+
+            <div className="space-y-5">
+              {zReportData.alreadyRun && (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  Z report has already been run for today. Showing the saved report.
                 </p>
-              ) : (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: 'Total Orders', value: String(zReportData.totalOrders) },
-                      { label: 'Total Revenue', value: `$${Number(zReportData.totalRevenue).toFixed(2)}` },
-                      { label: 'Tax (8.25%)', value: `$${Number(zReportData.tax).toFixed(2)}` },
-                      { label: 'Revenue + Tax', value: `$${Number(zReportData.totalWithTax).toFixed(2)}` },
-                      { label: 'Total Expenses', value: `$${Number(zReportData.totalExpenses).toFixed(2)}` },
-                      { label: 'Total Profit', value: `$${Number(zReportData.totalProfit).toFixed(2)}` },
-                    ].map(stat => (
-                      <div key={stat.label} className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-500">{stat.label}</p>
-                        <p className="text-lg font-bold mt-0.5">{stat.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Employees</h4>
-                    <div className="overflow-x-auto rounded-lg border border-gray-200">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                          <tr>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Employee</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Orders Processed</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 bg-white">
-                          {zReportData.employees?.map((emp, i) => (
-                            <tr key={i} className="hover:bg-gray-50">
-                              <td className="px-4 py-2">{emp.name}</td>
-                              <td className="px-4 py-2">{emp.order_count}</td>
-                            </tr>
-                          ))}
-                          {zReportData.employees?.length === 0 && (
-                            <tr><td colSpan={2} className="px-4 py-4 text-center text-gray-400 text-sm">No orders today.</td></tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-400 text-center pt-2 border-t">
-                    This Z report has been recorded. Totals have been reset for the next business day.
-                  </p>
-                </div>
               )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Total Orders', value: String(zReportData.totalOrders ?? 0) },
+                  { label: 'Total Revenue', value: `$${Number(zReportData.totalRevenue ?? 0).toFixed(2)}` },
+                  { label: 'Tax (8.25%)', value: `$${Number(zReportData.tax ?? 0).toFixed(2)}` },
+                  { label: 'Revenue + Tax', value: `$${Number(zReportData.totalWithTax ?? 0).toFixed(2)}` },
+                  { label: 'Total Expenses', value: `$${Number(zReportData.totalExpenses ?? 0).toFixed(2)}` },
+                  { label: 'Total Profit', value: `$${Number(zReportData.totalProfit ?? 0).toFixed(2)}` },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-500">{stat.label}</p>
+                    <p className="text-lg font-bold mt-0.5">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2">Employees</h4>
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">Employee</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">Orders Processed</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {zReportData.employees?.map((emp, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-2">{emp.name}</td>
+                          <td className="px-4 py-2">{emp.order_count}</td>
+                        </tr>
+                      ))}
+
+                      {(!zReportData.employees || zReportData.employees.length === 0) && (
+                        <tr>
+                          <td colSpan={2} className="px-4 py-4 text-center text-gray-400 text-sm">
+                            No orders today.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {!zReportData.alreadyRun && (
+                <p className="text-xs text-gray-400 text-center pt-2 border-t">
+                  This Z report has been recorded. Totals have been reset for the next business day.
+                </p>
+              )}
+            </div>
             </>
           )}
 

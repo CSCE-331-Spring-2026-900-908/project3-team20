@@ -9,7 +9,7 @@ export async function GET() {
         COUNT(orderid) AS orders_in_week
       FROM orders
       GROUP BY week
-      ORDER BY week
+      ORDER BY week DESC
     `);
     return NextResponse.json(result.rows);
   } catch (err) {

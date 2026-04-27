@@ -7,10 +7,9 @@ import { getChicagoDate, getChicagoHour } from '@/lib/time';
 
 const SWEETNESS_TO_SUGAR_USAGE: Record<DrinkCustomization['sweetness'], number> = {
   '0%': 0,
-  '25%': 1,
   '50%': 2,
-  '75%': 3,
   '100%': 4,
+  '150%': 6,
 };
 const ICE_TO_TOPPING_USAGE: Record<DrinkCustomization['ice'], number> = {
   None: 0,

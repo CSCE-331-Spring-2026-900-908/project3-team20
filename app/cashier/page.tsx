@@ -10,7 +10,7 @@ const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
     ice: 'Normal',
 };
 const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
-const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['0%', '25%', '50%', '75%', '100%'];
+const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['0%', '50%', '100%', '150%'];
 const ICE_OPTIONS: DrinkCustomization['ice'][] = ['None', 'Less', 'Normal', 'More'];
 const PAYMENT_OPTIONS = ['Cash', 'Credit'] as const;
 type PaymentMethod = (typeof PAYMENT_OPTIONS)[number];
@@ -528,7 +528,7 @@ function CustomizeModal({
 
                         <div>
                             <label className="block text-sm font-medium mb-1">Sweetness</label>
-                            <div className="customization-slider">
+                            <div className="customization-slider customization-slider-sweetness">
                                 {SWEETNESS_OPTIONS.map(option => (
                                     <button
                                         key={option}

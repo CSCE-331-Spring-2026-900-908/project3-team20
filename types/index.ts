@@ -22,7 +22,7 @@ export interface CartItemTopping {
 
 export interface DrinkCustomization {
   hot: 'Yes' | 'No';
-  sweetness: '0%' | '25%' | '50%' | '75%' | '100%';
+  sweetness: '0%' | '50%' | '100%' | '150%';
   ice: 'None' | 'Less' | 'Normal' | 'More';
 }
 

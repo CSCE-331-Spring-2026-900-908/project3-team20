@@ -774,6 +774,16 @@ html.dark-mode [disabled] {
   background: #f3f4f6;
 }
 
+.customization-slider-sweetness {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.customization-slider-sweetness .customization-option {
+  flex: initial;
+  width: 100%;
+}
+
 .customization-option {
   flex: 1 1 0;
   min-width: 0;

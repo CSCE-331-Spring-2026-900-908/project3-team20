@@ -63,18 +63,20 @@ export default function MenuBoardPage() {
 
       <style jsx global>{`
         @keyframes scroll-wheel {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
         }
         @keyframes scroll-toppings {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
         }
         .drinks-wheel {
-          animation: scroll-wheel 80s linear infinite;
+          animation: scroll-wheel 60s linear infinite;
+          will-change: transform;
         }
         .toppings-track {
-          animation: scroll-toppings 50s linear infinite;
+          animation: scroll-toppings 60s linear infinite;
+          will-change: transform;
         }
         @media (prefers-reduced-motion: reduce) {
           .drinks-wheel, .toppings-track {
@@ -198,8 +200,12 @@ export default function MenuBoardPage() {
               </div>
             </div>
 
-            {/* Toppings scrolling strip */}
-            {toppings.length > 0 && (
+            {/* Toppings scrolling strip - filter out sugar, hot, ice */}
+            {(() => {
+              const filteredToppings = toppings.filter(t =>
+                !['sugar', 'hot', 'ice'].includes(t.name.toLowerCase())
+              );
+              return filteredToppings.length > 0 && (
               <section className="shrink-0 py-3 border-t border-stone-200 bg-white/50">
                 <div className="flex items-center gap-2 mb-2 px-4">
                   <span className="h-3 w-3 rounded-full bg-teal-500 shrink-0" />
@@ -211,14 +217,14 @@ export default function MenuBoardPage() {
                 <div className="overflow-hidden">
                   <div className="toppings-track flex gap-3 px-4" style={{ width: 'max-content' }}>
                     {/* First copy */}
-                    {toppings.map(topping => (
+                    {filteredToppings.map(topping => (
                       <div key={`${topping.toppingid}-a`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
                         <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
                         <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
                       </div>
                     ))}
                     {/* Duplicate for seamless loop */}
-                    {toppings.map(topping => (
+                    {filteredToppings.map(topping => (
                       <div key={`${topping.toppingid}-b`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
                         <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
                         <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
@@ -227,7 +233,8 @@ export default function MenuBoardPage() {
                   </div>
                 </div>
               </section>
-            )}
+              );
+            })()}
           </>
         )}
       </main>

@@ -110,6 +110,69 @@ export async function POST(request: Request) {
       }
     }
 
+    const ingredientNeeds = new Map<number, number>();
+    for (const item of items) {
+      const recipeRows = await client.query<{ ingredientid: number; amountused: number }>(
+        'SELECT ingredientid, amountused FROM recipes WHERE drinkid = $1',
+        [item.drink.drinkid]
+      );
+      for (const row of recipeRows.rows) {
+        const prev = ingredientNeeds.get(row.ingredientid) ?? 0;
+        ingredientNeeds.set(row.ingredientid, prev + row.amountused * item.quantity);
+      }
+    }
+
+    if (ingredientNeeds.size > 0) {
+      const ids = Array.from(ingredientNeeds.keys());
+      const stockRes = await client.query<{ ingredientid: number; name: string; totalquantity: number }>(
+        'SELECT ingredientid, name, totalquantity FROM ingredients WHERE ingredientid = ANY($1)',
+        [ids]
+      );
+      const shortfall = stockRes.rows.filter(
+        row => row.totalquantity < (ingredientNeeds.get(row.ingredientid) ?? 0)
+      );
+      if (shortfall.length > 0) {
+        await client.query('ROLLBACK');
+        return NextResponse.json(
+          { error: 'Insufficient ingredients', outOfStock: shortfall.map(r => r.name) },
+          { status: 409 }
+        );
+      }
+    }
+
+    const toppingNeeds = new Map<number, number>();
+    for (const item of items) {
+      for (const t of item.toppings) {
+        if (t.amount > 0) {
+          toppingNeeds.set(t.toppingid, (toppingNeeds.get(t.toppingid) ?? 0) + t.amount * item.quantity);
+        }
+      }
+      for (const usage of getCustomizationInventoryUsage(item.customization)) {
+        const toppingId = customizationToppingIds.get(usage.name);
+        if (toppingId) {
+          toppingNeeds.set(toppingId, (toppingNeeds.get(toppingId) ?? 0) + usage.amount * item.quantity);
+        }
+      }
+    }
+
+    if (toppingNeeds.size > 0) {
+      const ids = Array.from(toppingNeeds.keys());
+      const stockRes = await client.query<{ toppingid: number; name: string; totalquantity: number }>(
+        'SELECT toppingid, name, totalquantity FROM toppings WHERE toppingid = ANY($1)',
+        [ids]
+      );
+      const shortfall = stockRes.rows.filter(
+        row => row.totalquantity < (toppingNeeds.get(row.toppingid) ?? 0)
+      );
+      if (shortfall.length > 0) {
+        await client.query('ROLLBACK');
+        return NextResponse.json(
+          { error: 'Insufficient toppings', outOfStock: shortfall.map(r => r.name) },
+          { status: 409 }
+        );
+      }
+    }  
+
     // 1. Insert order
     const orderRes = await client.query(
       'INSERT INTO orders (customerid, employeeid, total, date, hour) VALUES ($1, $2, $3, $4, $5) RETURNING orderid',

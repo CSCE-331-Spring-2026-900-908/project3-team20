@@ -28,6 +28,7 @@ export default function CashierPage() {
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [showUpsell, setShowUpsell] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
+    const [orderError, setOrderError] = useState<string | null>(null);
 
     useEffect(() => {
         const storedEmployeeId = localStorage.getItem('employeeId');
@@ -77,23 +78,38 @@ export default function CashierPage() {
         setCart(prev => prev.filter((_, i) => i !== index));
     }, []);
 
+
     const placeOrder = async (tip: number) => {
         if (cart.length === 0) return;
+
+        const itemsSnapshot = cart;
+
         try {
             const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cart, employeeId, tip }),
+                body: JSON.stringify({ items: itemsSnapshot, employeeId, tip }),
             });
+
+            if (res.status === 409) {
+                const data = await res.json();
+                setOrderError(`Sorry, we're out of: ${data.outOfStock.join(', ')}`);
+                return;
+            }
+
             if (res.ok) {
+                setOrderError(null);
                 setCart([]);
                 setOrderPlaced(true);
+                setShowUpsell(false);
                 setTimeout(() => setOrderPlaced(false), 3000);
             }
         } catch (err) {
             console.error('Checkout failed:', err);
+            setOrderError('Sorry, something went wrong while placing the order.');
         }
     };
+
 
     const checkout = () => {
         if (cart.length === 0) return;
@@ -263,14 +279,21 @@ export default function CashierPage() {
                     initialCustomization={editingIndex !== null ? cart[editingIndex].customization : DEFAULT_CUSTOMIZATION}
                 />
             )}
-
             {showUpsell && (
                 <UpsellModal
                     drinks={drinks}
                     cart={cart}
-                    onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
-                    onConfirm={(tip) => { setShowUpsell(false); placeOrder(tip); }}
-                    onClose={() => setShowUpsell(false)}
+                    onAddDrink={(drink) =>
+                        setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])
+                    }
+                    onConfirm={(tip) => {
+                        placeOrder(tip);
+                    }}
+                    onClose={() => {
+                        setShowUpsell(false);
+                        setOrderError(null);
+                    }}
+                    errorMessage={orderError}
                 />
             )}
         </div>
@@ -283,12 +306,14 @@ function UpsellModal({
     onAddDrink,
     onConfirm,
     onClose,
+    errorMessage,
 }: {
     drinks: Drink[];
     cart: CartItem[];
     onAddDrink: (drink: Drink) => void;
     onConfirm: (tipAmount: number) => void;
     onClose: () => void;
+    errorMessage?: string | null;
 }) {
     const cartDrinkIds = new Set(cart.map(i => i.drink.drinkid));
     const suggestions = drinks.filter(d => !cartDrinkIds.has(d.drinkid)).slice(0, 3);
@@ -371,6 +396,13 @@ function UpsellModal({
                         <span>Total</span><span>${(subtotal + tipAmount).toFixed(2)}</span>
                     </div>
                 </div>
+
+                {errorMessage && (
+                    <div className="mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                        {errorMessage}
+                    </div>
+                )}
+
                 <div className="px-4 pb-4 flex gap-2">
                     <button
                         onClick={onClose}

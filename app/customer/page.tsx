@@ -152,6 +152,7 @@ export default function CustomerPage() {
   const [wheelPrize, setWheelPrize] = useState<WheelPrize | null>(null);
   const [hasSpunWheel, setHasSpunWheel] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkContrast = () => {
@@ -276,11 +277,23 @@ export default function CustomerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: itemsSnapshot, tip, wheelPrize }),
       });
+
+      if (res.status === 409) {
+        const data = await res.json();
+        setOrderError(`Sorry, we're out of: ${data.outOfStock.join(', ')}`);
+        return;
+      }
+
       if (res.ok) {
+        setOrderError(null);
         const data = await res.json().catch(() => ({}));
         setCart([]);
         setHasSpunWheel(false);
         setOrderPlaced(true);
+
+        setShowUpsell(false);
+        setWheelPrize(null);
+
         setTimeout(() => setOrderPlaced(false), 3000);
         if (email) {
           fetch('/api/email-receipt', {
@@ -670,9 +683,17 @@ export default function CustomerPage() {
           cart={cart}
           isHappyHour={isHappyHour}
           wheelPrize={wheelPrize}
-          onAddDrink={(drink) => setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])}
-          onConfirm={(tip, email) => { setShowUpsell(false); setWheelPrize(null); placeOrder(tip, email); }}
-          onClose={() => { setShowUpsell(false); }}
+          onAddDrink={(drink) =>
+            setCart(prev => [...prev, { drink, quantity: 1, toppings: [], customization: DEFAULT_CUSTOMIZATION }])
+          }
+          onConfirm={(tip, email) => {
+            placeOrder(tip, email);
+          }}
+          onClose={() => {
+            setShowUpsell(false);
+            setOrderError(null);
+          }}
+          errorMessage={orderError}
         />
       )}
     </div>
@@ -1042,6 +1063,7 @@ function UpsellModal({
   onAddDrink,
   onConfirm,
   onClose,
+  errorMessage,
 }: {
   drinks: Drink[];
   cart: CartItem[];
@@ -1050,6 +1072,7 @@ function UpsellModal({
   onAddDrink: (drink: Drink) => void;
   onConfirm: (tipAmount: number, email?: string) => void;
   onClose: () => void;
+  errorMessage?: string | null;
 }) {
   const [wantEmail, setWantEmail] = useState(false);
   const [email, setEmail] = useState('');
@@ -1199,8 +1222,13 @@ function UpsellModal({
             </>
           )}
         </div>
-
         </div>
+
+        {errorMessage && (
+          <div className="mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="px-4 pb-4 pt-3 flex gap-2 shrink-0 border-t bg-white rounded-b-xl">
           <button

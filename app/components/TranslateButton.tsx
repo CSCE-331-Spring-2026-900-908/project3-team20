@@ -59,7 +59,7 @@ export function TranslateButton() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2"
+        className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

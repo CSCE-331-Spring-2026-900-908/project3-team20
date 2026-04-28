@@ -552,13 +552,13 @@ export default function ManagerPage() {
             <button onClick={fetchAll} className="px-4 py-2 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50">
               Refresh
             </button>
-            <button onClick={() => openAdd('ingredient')} className="px-4 py-2 text-sm rounded bg-amber-500 text-white hover:bg-amber-600">
+            <button onClick={() => openAdd('ingredient')} className="px-4 py-2 text-sm rounded bg-amber-700 text-white hover:bg-amber-800">
               Add Ingredient
             </button>
-            <button onClick={() => openAdd('topping')} className="px-4 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600">
+            <button onClick={() => openAdd('topping')} className="px-4 py-2 text-sm rounded bg-blue-700 text-white hover:bg-blue-800">
               Add Topping
             </button>
-            <button onClick={() => openAdd('misc')} className="px-4 py-2 text-sm rounded bg-emerald-500 text-white hover:bg-emerald-600">
+            <button onClick={() => openAdd('misc')} className="px-4 py-2 text-sm rounded bg-emerald-700 text-white hover:bg-emerald-800">
               Add Misc
             </button>
           </div>
@@ -566,7 +566,7 @@ export default function ManagerPage() {
         {view === 'menu' && (
           <button
             onClick={() => { setAddDrinkName(''); setAddDrinkCost(''); setAddDrinkCategory(''); setAddDrinkError(''); setShowAddDrinkDialog(true); }}
-            className="px-4 py-2 text-sm rounded bg-rose-500 text-white hover:bg-rose-600"
+            className="px-4 py-2 text-sm rounded bg-rose-600 text-white hover:bg-rose-700"
           >
             Add Drink
           </button>
@@ -575,19 +575,19 @@ export default function ManagerPage() {
           <div className="flex gap-2">
             <button
               onClick={fetchXReport}
-              className="px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600"
+              className="px-4 py-2 text-sm rounded bg-purple-600 text-white hover:bg-purple-700"
             >
               X Report
             </button>
             <button
               onClick={fetchZReport}
-              className="px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600"
+              className="px-4 py-2 text-sm rounded bg-purple-600 text-white hover:bg-purple-700"
             >
               Z Report
             </button>
             <button
               onClick={() => setShowCustomReport(true)}
-              className="px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600"
+              className="px-4 py-2 text-sm rounded bg-purple-600 text-white hover:bg-purple-700"
             >
               Custom Report
             </button>

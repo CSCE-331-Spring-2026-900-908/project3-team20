@@ -6,11 +6,11 @@ import { Drink, Topping } from '@/types';
 const CATEGORY_ORDER = ['fruity', 'milk tea', 'signature', 'specialty', 'tea', 'other'];
 
 const categoryConfig: Record<string, { bg: string; border: string; text: string; label: string }> = {
-  'fruity': { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-700', label: 'bg-pink-500' },
-  'milk tea': { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800', label: 'bg-amber-600' },
+  'fruity': { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-700', label: 'bg-pink-700' },
+  'milk tea': { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800', label: 'bg-amber-700' },
   'signature': { bg: 'bg-violet-100', border: 'border-violet-300', text: 'text-violet-700', label: 'bg-violet-600' },
-  'specialty': { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800', label: 'bg-orange-500' },
-  'tea': { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-emerald-700', label: 'bg-emerald-600' },
+  'specialty': { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800', label: 'bg-orange-700' },
+  'tea': { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-emerald-700', label: 'bg-emerald-700' },
   'other': { bg: 'bg-stone-100', border: 'border-stone-300', text: 'text-stone-700', label: 'bg-stone-500' },
 };
 

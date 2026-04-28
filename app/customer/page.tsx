@@ -417,7 +417,7 @@ export default function CustomerPage() {
                 }`}
               >
                 {isHappyHour && (
-                  <span className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-tight">
+                  <span className="absolute top-2 right-2 bg-amber-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-tight">
                     -{HAPPY_HOUR_DISCOUNT_PCT}%
                   </span>
                 )}
@@ -764,7 +764,7 @@ function CustomizeModal({
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold">{drink.name}</h3>
                 {isHappyHour && (
-                  <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-amber-700 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     -{HAPPY_HOUR_DISCOUNT_PCT}%
                   </span>
                 )}

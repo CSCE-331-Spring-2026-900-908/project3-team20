@@ -98,7 +98,7 @@ export default function MenuBoardPage() {
       </header>
 
       {/* Main scroll area */}
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
 
         {loading ? (
           <p className="text-stone-400 text-center m-auto text-xl tracking-wide">
@@ -107,7 +107,7 @@ export default function MenuBoardPage() {
         ) : (
           <>
             {/* Giant drinks wheel - single continuous scroll */}
-            <div className="flex-1 overflow-hidden relative">
+            <div className="flex-1 min-h-0 overflow-hidden relative">
               <div className="drinks-wheel flex items-center gap-6 h-full py-4 px-2" style={{ width: 'max-content' }}>
                 {/* First copy */}
                 {orderedDrinks.map(drink => {
@@ -123,8 +123,8 @@ export default function MenuBoardPage() {
                         {drink.category ?? 'Other'}
                       </div>
 
-                      {/* Large rectangular image */}
-                      <div className="w-full h-72 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
+                      {/* Large rectangular image - constrained to prevent overflow */}
+                      <div className="w-full flex-1 min-h-0 max-h-[55%] rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
                         {!imgErrors.has(drink.drinkid) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -140,13 +140,13 @@ export default function MenuBoardPage() {
                         )}
                       </div>
 
-                      {/* Drink name */}
-                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2">
+                      {/* Drink name - always visible */}
+                      <p className="text-lg font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2 shrink-0">
                         {drink.name}
                       </p>
 
-                      {/* Price */}
-                      <p className={`text-2xl font-bold ${cfg.text} mt-auto`}>
+                      {/* Price - always visible */}
+                      <p className={`text-xl font-bold ${cfg.text} shrink-0`}>
                         ${Number(drink.cost).toFixed(2)}
                       </p>
                     </div>
@@ -167,8 +167,8 @@ export default function MenuBoardPage() {
                         {drink.category ?? 'Other'}
                       </div>
 
-                      {/* Large rectangular image */}
-                      <div className="w-full h-72 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
+                      {/* Large rectangular image - constrained to prevent overflow */}
+                      <div className="w-full flex-1 min-h-0 max-h-[55%] rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 mb-2">
                         {!imgErrors.has(drink.drinkid) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -184,13 +184,13 @@ export default function MenuBoardPage() {
                         )}
                       </div>
 
-                      {/* Drink name */}
-                      <p className="text-xl font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2">
+                      {/* Drink name - always visible */}
+                      <p className="text-lg font-bold text-[#2A2A2A] text-center leading-tight mb-1 line-clamp-2 shrink-0">
                         {drink.name}
                       </p>
 
-                      {/* Price */}
-                      <p className={`text-2xl font-bold ${cfg.text} mt-auto`}>
+                      {/* Price - always visible */}
+                      <p className={`text-xl font-bold ${cfg.text} shrink-0`}>
                         ${Number(drink.cost).toFixed(2)}
                       </p>
                     </div>
@@ -205,28 +205,28 @@ export default function MenuBoardPage() {
                 !['sugar', 'hot', 'ice'].includes(t.name.toLowerCase())
               );
               return filteredToppings.length > 0 && (
-              <section className="shrink-0 py-3 border-t border-stone-200 bg-white/50">
-                <div className="flex items-center gap-2 mb-2 px-4">
-                  <span className="h-3 w-3 rounded-full bg-teal-500 shrink-0" />
+              <section className="shrink-0 py-2 border-t border-stone-200 bg-white/50 min-h-[70px]">
+                <div className="flex items-center gap-2 mb-1 px-4">
+                  <span className="h-2.5 w-2.5 rounded-full bg-teal-500 shrink-0" />
                   <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-teal-700">
                     Add-Ons &amp; Toppings
                   </h2>
                 </div>
 
-                <div className="overflow-hidden">
+                <div className="overflow-hidden max-h-[55px]">
                   <div className="toppings-track flex gap-3 px-4" style={{ width: 'max-content' }}>
                     {/* First copy */}
                     {filteredToppings.map(topping => (
-                      <div key={`${topping.toppingid}-a`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
-                        <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
-                        <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
+                      <div key={`${topping.toppingid}-a`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-3 py-1.5 flex flex-col gap-0.5 min-w-[90px]">
+                        <span className="font-semibold text-xs text-[#2A2A2A] leading-tight">{topping.name}</span>
+                        <span className="text-xs font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
                       </div>
                     ))}
                     {/* Duplicate for seamless loop */}
                     {filteredToppings.map(topping => (
-                      <div key={`${topping.toppingid}-b`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-4 py-2.5 flex flex-col gap-1 min-w-[100px]">
-                        <span className="font-semibold text-sm text-[#2A2A2A] leading-tight">{topping.name}</span>
-                        <span className="text-sm font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
+                      <div key={`${topping.toppingid}-b`} className="shrink-0 rounded-xl border border-teal-200 bg-white px-3 py-1.5 flex flex-col gap-0.5 min-w-[90px]">
+                        <span className="font-semibold text-xs text-[#2A2A2A] leading-tight">{topping.name}</span>
+                        <span className="text-xs font-bold text-teal-600">+${Number(topping.price).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

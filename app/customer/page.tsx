@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
 import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
@@ -336,16 +335,6 @@ export default function CustomerPage() {
         {/* Header — always shows the happy hour schedule */}
         <header className={`border-b px-3 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center justify-between gap-2 sm:gap-4 transition-colors duration-500 ${isHappyHour ? 'bg-amber-400 border-amber-500' : 'bg-white'}`}>
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-amber-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-              Home
-            </Link>
             <h1 className={`text-lg sm:text-2xl font-bold ${isHappyHour ? 'text-amber-950' : ''}`}>Order Here</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

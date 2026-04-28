@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
 import EmployeeManager from '@/app/components/EmployeeManager';
@@ -530,13 +529,6 @@ export default function ManagerPage() {
 
   return (
     <main className="min-h-full bg-gray-50 text-black">
-      <Link
-        href="/"
-        className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200"
-      >
-        Back to Home
-      </Link>
-
       {/* Header */}
       <header className="border-b bg-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Drink, Topping } from '@/types';
 
@@ -244,12 +243,6 @@ export default function MenuBoardPage() {
         Prices subject to change · Tax not included
       </footer>
 
-      <Link
-        href="/"
-        className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-md transition hover:-translate-y-0.5 hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-amber-300"
-      >
-        ← Back
-      </Link>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal } from '@/types';
 
@@ -137,13 +136,6 @@ export default function CashierPage() {
 
     return (
         <div className="flex h-full bg-white text-black">
-            <Link
-                href="/"
-                className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-50 focus:outline-none focus:ring-4 focus:ring-amber-200 sm:bottom-6 sm:left-6"
-            >
-                Back to Home
-            </Link>
-
             {/* Main content */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="border-b px-6 py-4">

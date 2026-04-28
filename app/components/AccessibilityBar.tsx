@@ -25,7 +25,10 @@ export function AccessibilityBar() {
   if (pathname?.startsWith('/menu-board')) return null;
 
   return (
-    <div className="flex flex-wrap justify-end items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-gray-50 border-b border-gray-200">
+    <header
+      aria-label="Accessibility options"
+      className="flex flex-wrap justify-end items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-gray-50 border-b border-gray-200"
+    >
       <button
         id="theme-toggle"
         type="button"
@@ -36,6 +39,6 @@ export function AccessibilityBar() {
       </button>
       <ButtonSizeToggle />
       <TranslateButton />
-    </div>
+    </header>
   );
 }

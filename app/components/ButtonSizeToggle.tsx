@@ -14,7 +14,7 @@ export function ButtonSizeToggle() {
   const { size, setSize } = useButtonSize();
 
   return (
-    <div className="flex items-center gap-1" aria-label="Button size">
+    <div className="flex items-center gap-1" role="group" aria-label="Button size">
       <span className="text-xs text-gray-500 mr-1">Size:</span>
       {SIZE_OPTIONS.map((option) => (
         <button

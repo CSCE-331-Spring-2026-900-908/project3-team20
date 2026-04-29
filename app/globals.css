@@ -513,6 +513,16 @@ html.dark-mode .menu-specialty {
   border-color: #ff8c42 !important;
 }
 
+html.dark-mode .menu-coffee {
+  background-color: #1f1808 !important;
+  border-color: #d4a017 !important;
+}
+
+html.dark-mode .menu-slushies {
+  background-color: #08191f !important;
+  border-color: #3ec1d3 !important;
+}
+
 html.dark-mode .menu-tea {
   background-color: #0a1a10 !important;
 }

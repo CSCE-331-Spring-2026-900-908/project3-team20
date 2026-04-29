@@ -169,6 +169,8 @@ function getMenuCardClass(category: string | null | undefined): string {
     'milk tea': 'menu-milk-tea border-amber-400',
     'signature': 'menu-signature border-violet-400',
     'specialty': 'menu-specialty border-orange-400',
+    'coffee': 'menu-coffee border-yellow-500',
+    'slushies': 'menu-slushies border-cyan-400',
     'tea': 'menu-tea border-emerald-400',
     'other': 'menu-other border-stone-400',
   };
@@ -406,7 +408,7 @@ export default function ManagerPage() {
       return;
     }
 
-    let imageUrl = null;
+    let imageUrl: string | null = editDrinkTarget.image_url ?? null;
     if (editDrinkImage) {
       const formData = new FormData();
       formData.append('file', editDrinkImage);
@@ -848,6 +850,8 @@ export default function ManagerPage() {
                   <option value="Milk Tea">Milk Tea</option>
                   <option value="Signature">Signature</option>
                   <option value="Specialty">Specialty</option>
+                  <option value="Coffee">Coffee</option>
+                  <option value="Slushies">Slushies</option>
                   <option value="Tea">Tea</option>
                 </select>
               </div>
@@ -1073,6 +1077,8 @@ export default function ManagerPage() {
                   <option value="Milk Tea">Milk Tea</option>
                   <option value="Signature">Signature</option>
                   <option value="Specialty">Specialty</option>
+                  <option value="Coffee">Coffee</option>
+                  <option value="Slushies">Slushies</option>
                   <option value="Tea">Tea</option>
                 </select>
               </div>

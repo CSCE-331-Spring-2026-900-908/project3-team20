@@ -1,8 +1,90 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Ingredient, Topping, MiscItem } from '@/types';
 import EmployeeManager from '@/app/components/EmployeeManager';
+
+function DrinkImageInput({
+  value,
+  onChange,
+}: {
+  value: File | null;
+  onChange: (file: File | null) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [pasteFlash, setPasteFlash] = useState(false);
+
+  useEffect(() => {
+    if (!value) { setPreviewUrl(null); return; }
+    const url = URL.createObjectURL(value);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [value]);
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
+        if (!blob) continue;
+        const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+        const file = new File([blob], `pasted-${Date.now()}.${ext}`, { type: blob.type });
+        onChange(file);
+        setPasteFlash(true);
+        setTimeout(() => setPasteFlash(false), 600);
+        e.preventDefault();
+        return;
+      }
+    }
+  };
+
+  return (
+    <div
+      tabIndex={0}
+      onPaste={handlePaste}
+      className={`w-full border rounded px-3 py-2 text-sm flex items-center gap-3 outline-none transition focus:ring-2 focus:ring-rose-300 ${pasteFlash ? 'ring-2 ring-green-400' : ''}`}
+    >
+      {previewUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={previewUrl} alt="Preview" className="h-12 w-12 object-cover rounded border" />
+      ) : (
+        <div className="h-12 w-12 rounded border border-dashed flex items-center justify-center text-gray-400 text-xs">img</div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-3 py-1 rounded bg-rose-50 text-rose-700 font-semibold hover:bg-rose-100"
+          >
+            Choose file
+          </button>
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="px-3 py-1 rounded border text-gray-600 hover:bg-gray-50"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-gray-500 mt-1 truncate">
+          {value ? value.name : 'or click here and press Ctrl/Cmd+V to paste an image'}
+        </p>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => onChange(e.target.files?.[0] || null)}
+      />
+    </div>
+  );
+}
 
 type BarChartProps = {
   data: { label: string; value: number; maxValue?: number }[];
@@ -858,12 +940,7 @@ export default function ManagerPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => setAddDrinkImage(e.target.files?.[0] || null)}
-                  className="w-full border rounded px-3 py-2 text-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-rose-50 file:text-rose-700 file:text-sm file:font-semibold hover:file:bg-rose-100"
-                />
+                <DrinkImageInput value={addDrinkImage} onChange={setAddDrinkImage} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>
@@ -1085,12 +1162,7 @@ export default function ManagerPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => setEditDrinkImage(e.target.files?.[0] || null)}
-                  className="w-full border rounded px-3 py-2 text-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-rose-50 file:text-rose-700 file:text-sm file:font-semibold hover:file:bg-rose-100"
-                />
+                <DrinkImageInput value={editDrinkImage} onChange={setEditDrinkImage} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipe</label>

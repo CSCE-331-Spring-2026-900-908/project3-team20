@@ -530,6 +530,16 @@ export default function CustomerPage() {
                 className="h-9 w-9"
               />
             )}
+            {textToSpeechSupported && speaking && (
+              <button
+                type="button"
+                onClick={stop}
+                aria-label="Stop audio"
+                className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-sm transition hover:bg-stone-50"
+              >
+                Stop Audio
+              </button>
+            )}
             <button
               onClick={() => setCartOpen(false)}
               aria-label="Close cart"
@@ -659,6 +669,8 @@ export default function CustomerPage() {
           initialCustomization={editingIndex !== null ? cart[editingIndex].customization : DEFAULT_CUSTOMIZATION}
           canSpeak={textToSpeechSupported}
           onSpeakDetails={speak}
+          speaking={speaking}
+          onStopSpeaking={stop}
         />
       )}
 
@@ -709,6 +721,8 @@ function CustomizeModal({
   initialCustomization = DEFAULT_CUSTOMIZATION,
   canSpeak = false,
   onSpeakDetails,
+  speaking = false,
+  onStopSpeaking,
 }: {
   drink: Drink;
   toppings: Topping[];
@@ -720,6 +734,8 @@ function CustomizeModal({
   initialCustomization?: DrinkCustomization;
   canSpeak?: boolean;
   onSpeakDetails?: (message: string) => unknown;
+  speaking?: boolean;
+  onStopSpeaking?: () => void;
 }) {
   const selectableToppings = toppings.filter(
     topping => !HIDDEN_CUSTOMIZATION_TOPPINGS.has(topping.name.trim().toLowerCase())
@@ -785,15 +801,27 @@ function CustomizeModal({
                 <p className="text-gray-600 mt-0.5">${sizedBase.toFixed(2)} <span className="text-xs">({size})</span></p>
               )}
             </div>
-            {canSpeak && onSpeakDetails && (
-              <SpeakButton
-                compact
-                label={`Hear customization options for ${drink.name}`}
-                aria-label={`Hear customization options for ${drink.name}`}
-                onClick={() => onSpeakDetails(customizationAnnouncement)}
-                className="h-9 w-9 shrink-0"
-              />
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {canSpeak && onSpeakDetails && (
+                <SpeakButton
+                  compact
+                  label={`Hear customization options for ${drink.name}`}
+                  aria-label={`Hear customization options for ${drink.name}`}
+                  onClick={() => onSpeakDetails(customizationAnnouncement)}
+                  className="h-9 w-9"
+                />
+              )}
+              {canSpeak && speaking && onStopSpeaking && (
+                <button
+                  type="button"
+                  onClick={onStopSpeaking}
+                  aria-label="Stop audio"
+                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-sm transition hover:bg-stone-50"
+                >
+                  Stop Audio
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

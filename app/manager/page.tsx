@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Ingredient, Topping, MiscItem } from '@/types';
 import EmployeeManager from '@/app/components/EmployeeManager';
 
@@ -275,6 +276,17 @@ type ZReportData = {
 
 
 export default function ManagerPage() {
+  const router = useRouter();
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem('employeeId')) {
+      router.replace('/');
+    } else {
+      setAuthenticated(true);
+    }
+  }, [router]);
+
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [miscItems, setMiscItems] = useState<MiscItem[]>([]);
@@ -603,6 +615,8 @@ export default function ManagerPage() {
     setEditTarget(null);
     fetchAll();
   };
+
+  if (!authenticated) return null;
 
   const costLabel = addType === 'ingredient' ? 'Cost' : 'Price';
   const visibleToppings = toppings.filter(top => top.name.trim().toLowerCase() !== 'hot');

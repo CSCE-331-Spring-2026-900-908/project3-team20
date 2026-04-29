@@ -121,7 +121,7 @@ export default function CashierPage() {
         'fruity':    'bg-pink-100 border-pink-300 hover:bg-pink-200',
         'milk tea':  'bg-amber-100 border-amber-300 hover:bg-amber-200',
         'signature': 'bg-violet-100 border-violet-300 hover:bg-violet-200',
-        'specialty': 'bg-orange-100 border-orange-300 hover:bg-orange-200',
+        'seasonal': 'bg-orange-100 border-orange-300 hover:bg-orange-200',
         'coffee':    'bg-yellow-100 border-yellow-300 hover:bg-yellow-200',
         'slushies':  'bg-cyan-100 border-cyan-300 hover:bg-cyan-200',
         'tea':       'bg-emerald-100 border-emerald-300 hover:bg-emerald-200',

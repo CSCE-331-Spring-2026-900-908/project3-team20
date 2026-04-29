@@ -17,7 +17,7 @@ export async function PATCH(request: Request) {
         "UPDATE drinks SET category = 'Signature' WHERE LOWER(category) = 'signature'",
       );
       await client.query(
-        "UPDATE drinks SET category = 'Specialty' WHERE LOWER(category) = 'specialty'",
+        "UPDATE drinks SET category = 'Seasonal' WHERE LOWER(category) IN ('specialty', 'seasonal')",
       );
       await client.query(
         "UPDATE drinks SET category = 'Tea' WHERE LOWER(category) = 'tea'",

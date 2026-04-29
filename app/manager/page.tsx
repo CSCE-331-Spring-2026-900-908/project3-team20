@@ -251,7 +251,7 @@ function getMenuCardClass(category: string | null | undefined): string {
     'fruity': 'menu-fruity border-pink-400',
     'milk tea': 'menu-milk-tea border-amber-400',
     'signature': 'menu-signature border-violet-400',
-    'specialty': 'menu-specialty border-orange-400',
+    'seasonal': 'menu-seasonal border-orange-400',
     'coffee': 'menu-coffee border-yellow-500',
     'slushies': 'menu-slushies border-cyan-400',
     'tea': 'menu-tea border-emerald-400',
@@ -376,7 +376,7 @@ export default function ManagerPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addType, setAddType] = useState<AddType>('ingredient');
   const [addName, setAddName] = useState('');
-  const [addQuantity, setAddQuantity] = useState(0);
+  const [addQuantity, setAddQuantity] = useState('0');
   const [addCost, setAddCost] = useState('');
   const [addError, setAddError] = useState('');
 
@@ -528,7 +528,7 @@ export default function ManagerPage() {
   const openAdd = (type: AddType) => {
     setAddType(type);
     setAddName('');
-    setAddQuantity(0);
+    setAddQuantity('0');
     setAddCost('');
     setAddError('');
     setShowAddDialog(true);
@@ -545,9 +545,10 @@ export default function ManagerPage() {
       misc: '/api/misc',
     };
 
+    const qtyVal = parseInt(addQuantity, 10) || 0;
     const body = addType === 'ingredient'
-      ? { name: addName.trim(), totalquantity: addQuantity, cost: costVal }
-      : { name: addName.trim(), totalquantity: addQuantity, price: costVal };
+      ? { name: addName.trim(), totalquantity: qtyVal, cost: costVal }
+      : { name: addName.trim(), totalquantity: qtyVal, price: costVal };
 
     const res = await fetch(endpoints[addType], {
       method: 'POST',
@@ -932,7 +933,7 @@ export default function ManagerPage() {
                   <option value="Fruity">Fruity</option>
                   <option value="Milk Tea">Milk Tea</option>
                   <option value="Signature">Signature</option>
-                  <option value="Specialty">Specialty</option>
+                  <option value="Seasonal">Seasonal</option>
                   <option value="Coffee">Coffee</option>
                   <option value="Slushies">Slushies</option>
                   <option value="Tea">Tea</option>
@@ -1035,7 +1036,7 @@ export default function ManagerPage() {
                   type="number"
                   min={0}
                   value={addQuantity}
-                  onChange={e => setAddQuantity(parseInt(e.target.value) || 0)}
+                  onChange={e => setAddQuantity(e.target.value)}
                   className="w-full border rounded px-3 py-2 text-sm"
                 />
               </div>
@@ -1154,7 +1155,7 @@ export default function ManagerPage() {
                   <option value="Fruity">Fruity</option>
                   <option value="Milk Tea">Milk Tea</option>
                   <option value="Signature">Signature</option>
-                  <option value="Specialty">Specialty</option>
+                  <option value="Seasonal">Seasonal</option>
                   <option value="Coffee">Coffee</option>
                   <option value="Slushies">Slushies</option>
                   <option value="Tea">Tea</option>

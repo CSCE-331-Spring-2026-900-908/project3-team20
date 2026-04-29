@@ -199,7 +199,7 @@ export default function CustomerPage() {
     'Fruity':     'bg-pink-50 border-pink-200 hover:bg-pink-100',
     'Milk Tea':   'bg-amber-50 border-amber-200 hover:bg-amber-100',
     'Signature':  'bg-violet-50 border-violet-200 hover:bg-violet-100',
-    'Specialty':  'bg-orange-50 border-orange-200 hover:bg-orange-100',
+    'Seasonal':   'bg-orange-50 border-orange-200 hover:bg-orange-100',
     'Coffee':     'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
     'Slushies':   'bg-cyan-50 border-cyan-200 hover:bg-cyan-100',
     'Tea':        'bg-emerald-50 border-emerald-200 hover:bg-emerald-100',

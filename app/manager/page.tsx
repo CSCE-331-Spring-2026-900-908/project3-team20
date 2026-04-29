@@ -924,20 +924,23 @@ export default function ManagerPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select
+                <input
+                  type="text"
+                  list="drink-categories"
                   value={addDrinkCategory}
                   onChange={e => setAddDrinkCategory(e.target.value)}
+                  placeholder="Select or type a category"
                   className="w-full border rounded px-3 py-2 text-sm"
-                >
-                  <option value="">Select category</option>
-                  <option value="Fruity">Fruity</option>
-                  <option value="Milk Tea">Milk Tea</option>
-                  <option value="Signature">Signature</option>
-                  <option value="Seasonal">Seasonal</option>
-                  <option value="Coffee">Coffee</option>
-                  <option value="Slushies">Slushies</option>
-                  <option value="Tea">Tea</option>
-                </select>
+                />
+                <datalist id="drink-categories">
+                  <option value="Fruity" />
+                  <option value="Milk Tea" />
+                  <option value="Signature" />
+                  <option value="Seasonal" />
+                  <option value="Coffee" />
+                  <option value="Slushies" />
+                  <option value="Tea" />
+                </datalist>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
@@ -1146,20 +1149,23 @@ export default function ManagerPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select
-                  value={editDrinkCategory}
-                  onChange={e => setEditDrinkCategory(e.target.value)}
+                <input
+                  type="text"
+                  list="drink-categories"
+                  value={addDrinkCategory}
+                  onChange={e => setAddDrinkCategory(e.target.value)}
+                  placeholder="Select or type a category"
                   className="w-full border rounded px-3 py-2 text-sm"
-                >
-                  <option value="">Select category</option>
-                  <option value="Fruity">Fruity</option>
-                  <option value="Milk Tea">Milk Tea</option>
-                  <option value="Signature">Signature</option>
-                  <option value="Seasonal">Seasonal</option>
-                  <option value="Coffee">Coffee</option>
-                  <option value="Slushies">Slushies</option>
-                  <option value="Tea">Tea</option>
-                </select>
+                />
+                <datalist id="drink-categories">
+                  <option value="Fruity" />
+                  <option value="Milk Tea" />
+                  <option value="Signature" />
+                  <option value="Seasonal" />
+                  <option value="Coffee" />
+                  <option value="Slushies" />
+                  <option value="Tea" />
+                </datalist>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>

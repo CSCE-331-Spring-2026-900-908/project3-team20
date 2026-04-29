@@ -71,6 +71,7 @@ type Drink = {
   name: string;
   cost: number;
   category: string;
+  image_url?: string | null;
 };
 
 type RecipeRow = {

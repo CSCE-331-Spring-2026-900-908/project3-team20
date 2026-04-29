@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal } from '@/types';
+import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, sizedDrinkCost } from '@/types';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
+    size: 'Medium',
     hot: 'No',
     sweetness: '100%',
     ice: 'Normal',
 };
+const SIZE_OPTIONS: DrinkCustomization['size'][] = ['Small', 'Medium', 'Large'];
 const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
 const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['0%', '50%', '100%', '150%'];
 const ICE_OPTIONS: DrinkCustomization['ice'][] = ['None', 'Less', 'Normal', 'More'];
@@ -206,7 +208,7 @@ export default function CashierPage() {
                                 <div>
                                     <p className="font-medium text-sm">{item.drink.name} x{item.quantity}</p>
                                     <p className="text-xs text-gray-500">
-                                        Hot: {item.customization.hot} | Sweetness: {item.customization.sweetness} | Ice: {item.customization.ice}
+                                        Size: {item.customization.size} | Hot: {item.customization.hot} | Sweetness: {item.customization.sweetness} | Ice: {item.customization.ice}
                                     </p>
                                     {item.toppings.filter(t => t.amount > 0).map(t => (
                                         <p key={t.toppingid} className="text-xs text-gray-500">
@@ -440,6 +442,7 @@ function CustomizeModal({
     const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>(
         Object.fromEntries(initialToppings.map(t => [t.toppingid, t.amount]))
     );
+    const [size, setSize] = useState<DrinkCustomization['size']>(initialCustomization.size);
     const [hot, setHot] = useState<DrinkCustomization['hot']>(initialCustomization.hot);
     const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(initialCustomization.sweetness);
     const [ice, setIce] = useState<DrinkCustomization['ice']>(
@@ -460,21 +463,22 @@ function CustomizeModal({
                 price: Number(t.price),
                 amount: toppingAmounts[t.toppingid],
             }));
-        onAdd(drink, quantity, selected, { hot, sweetness, ice });
+        onAdd(drink, quantity, selected, { size, hot, sweetness, ice });
     };
 
     const toppingCost = selectableToppings.reduce(
         (sum, t) => sum + Number(t.price) * (toppingAmounts[t.toppingid] || 0),
         0
     );
-    const itemTotal = (Number(drink.cost) + toppingCost) * quantity;
+    const sizedCost = sizedDrinkCost(Number(drink.cost), size);
+    const itemTotal = (sizedCost + toppingCost) * quantity;
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
             <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="px-5 py-4 border-b">
                     <h3 className="text-lg font-bold">{drink.name}</h3>
-                    <p className="text-gray-500">${Number(drink.cost).toFixed(2)}</p>
+                    <p className="text-gray-500">${sizedCost.toFixed(2)} <span className="text-xs">({size})</span></p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -498,6 +502,23 @@ function CustomizeModal({
                     </div>
 
                     <div className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Size</label>
+                            <div className="customization-slider">
+                                {SIZE_OPTIONS.map(option => (
+                                    <button
+                                        key={option}
+                                        type="button"
+                                        onClick={() => setSize(option)}
+                                        aria-pressed={size === option}
+                                        className={`customization-option ${size === option ? 'customization-option-active' : ''}`}
+                                    >
+                                        {option}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium mb-1">Hot Drink?</label>
                             <div className="customization-slider">

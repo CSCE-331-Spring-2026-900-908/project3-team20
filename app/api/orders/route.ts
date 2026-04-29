@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { PoolClient } from 'pg';
 import pool from '@/lib/db';
-import { CartItem, DrinkCustomization } from '@/types';
+import { CartItem, DrinkCustomization, sizedDrinkCost } from '@/types';
 import { isHappyHour, applyHappyHourDiscount } from '@/lib/happyHour';
 import { getChicagoDate, getChicagoHour } from '@/lib/time';
 
@@ -78,9 +78,8 @@ export async function POST(request: Request) {
     const happyHourActive = isHappyHour(hour);
 
     const subtotal = items.reduce((sum, item) => {
-      const drinkCost = happyHourActive
-        ? applyHappyHourDiscount(Number(item.drink.cost))
-        : Number(item.drink.cost);
+      const baseCost = sizedDrinkCost(Number(item.drink.cost), item.customization.size);
+      const drinkCost = happyHourActive ? applyHappyHourDiscount(baseCost) : baseCost;
       const toppingCost = item.toppings.reduce((s, t) => s + t.price * t.amount, 0);
       return sum + (drinkCost + toppingCost) * item.quantity;
     }, 0);
@@ -181,9 +180,8 @@ export async function POST(request: Request) {
 
     // 2. Insert order items and toppings
     for (const item of items) {
-      const singleCost = happyHourActive
-        ? applyHappyHourDiscount(Number(item.drink.cost))
-        : Number(item.drink.cost);
+      const sizedBase = sizedDrinkCost(Number(item.drink.cost), item.customization.size);
+      const singleCost = happyHourActive ? applyHappyHourDiscount(sizedBase) : sizedBase;
       const itemRes = await client.query(
         'INSERT INTO orderitems (orderid, drinkid, amount, singlecost) VALUES ($1, $2, $3, $4) RETURNING orderitemsid',
         [orderId, item.drink.drinkid, item.quantity, singleCost.toFixed(2)]

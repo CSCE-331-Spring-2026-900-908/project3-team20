@@ -20,10 +20,24 @@ export interface CartItemTopping {
   amount: number;
 }
 
+export type DrinkSize = 'Small' | 'Medium' | 'Large';
+
 export interface DrinkCustomization {
+  size: DrinkSize;
   hot: 'Yes' | 'No';
   sweetness: '0%' | '50%' | '100%' | '150%';
   ice: 'None' | 'Less' | 'Normal' | 'More';
+}
+
+// Medium is the baseline price; Small is 20% cheaper, Large is 20% more.
+export const SIZE_MULTIPLIERS: Record<DrinkSize, number> = {
+  Small: 0.8,
+  Medium: 1.0,
+  Large: 1.2,
+};
+
+export function sizedDrinkCost(baseCost: number, size: DrinkSize): number {
+  return baseCost * SIZE_MULTIPLIERS[size];
 }
 
 export interface Ingredient {
@@ -58,7 +72,8 @@ export function lineTotal(item: CartItem): number {
     (sum, t) => sum + t.price * t.amount,
     0
   );
-  return (item.drink.cost + toppingCost) * item.quantity;
+  const drinkCost = sizedDrinkCost(Number(item.drink.cost), item.customization.size);
+  return (drinkCost + toppingCost) * item.quantity;
 }
 
 // Happy hour: discount applies to the drink price only, not toppings
@@ -67,5 +82,6 @@ export function lineTotalDiscounted(item: CartItem, discountMultiplier: number):
     (sum, t) => sum + t.price * t.amount,
     0
   );
-  return (item.drink.cost * discountMultiplier + toppingCost) * item.quantity;
+  const drinkCost = sizedDrinkCost(Number(item.drink.cost), item.customization.size);
+  return (drinkCost * discountMultiplier + toppingCost) * item.quantity;
 }

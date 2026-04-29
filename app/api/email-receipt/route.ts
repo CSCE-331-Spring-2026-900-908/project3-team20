@@ -44,6 +44,7 @@ function buildReceiptHtml(
         <td style="padding:8px 0;border-bottom:1px solid #eee;">
           <div><strong>${escapeHtml(item.drink.name)}</strong> &times; ${item.quantity}</div>
           <div style="color:#666;font-size:12px;">
+            Size: ${escapeHtml(item.customization.size)} &middot;
             Hot: ${escapeHtml(item.customization.hot)} &middot;
             Sweetness: ${escapeHtml(item.customization.sweetness)} &middot;
             Ice: ${escapeHtml(item.customization.ice)}

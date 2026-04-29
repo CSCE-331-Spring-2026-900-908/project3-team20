@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted } from '@/types';
+import { Drink, Topping, CartItem, CartItemTopping, DrinkCustomization, lineTotal, lineTotalDiscounted, sizedDrinkCost } from '@/types';
 import { HAPPY_HOUR_START, HAPPY_HOUR_END, HAPPY_HOUR_DISCOUNT_PCT } from '@/lib/happyHour';
 import { useTextToSpeech } from '@/lib/useTextToSpeech';
 import { FloatingEmailInput } from '../components/FloatingEmailInput';
@@ -11,10 +11,12 @@ import { SpeakButton } from '../components/SpeakButton';
 import WeatherWidget from '../components/WeatherWidget';
 
 const DEFAULT_CUSTOMIZATION: DrinkCustomization = {
+  size: 'Medium',
   hot: 'No',
   sweetness: '100%',
   ice: 'Normal',
 };
+const SIZE_OPTIONS: DrinkCustomization['size'][] = ['Small', 'Medium', 'Large'];
 const HOT_OPTIONS: DrinkCustomization['hot'][] = ['Yes', 'No'];
 const SWEETNESS_OPTIONS: DrinkCustomization['sweetness'][] = ['0%', '50%', '100%', '150%'];
 const ICE_OPTIONS: DrinkCustomization['ice'][] = ['None', 'Less', 'Normal', 'More'];
@@ -726,6 +728,7 @@ function CustomizeModal({
   const [toppingAmounts, setToppingAmounts] = useState<Record<number, number>>(
     () => Object.fromEntries(initialToppings.map(t => [t.toppingid, t.amount]))
   );
+  const [size, setSize] = useState<DrinkCustomization['size']>(initialCustomization.size);
   const [hot, setHot] = useState<DrinkCustomization['hot']>(initialCustomization.hot);
   const [sweetness, setSweetness] = useState<DrinkCustomization['sweetness']>(initialCustomization.sweetness);
   const [ice, setIce] = useState<DrinkCustomization['ice']>(initialCustomization.ice);
@@ -744,14 +747,15 @@ function CustomizeModal({
         price: Number(t.price),
         amount: toppingAmounts[t.toppingid],
       }));
-    onAdd(drink, quantity, selected, { hot, sweetness, ice });
+    onAdd(drink, quantity, selected, { size, hot, sweetness, ice });
   };
 
   const toppingCost = selectableToppings.reduce(
     (sum, t) => sum + Number(t.price) * (toppingAmounts[t.toppingid] || 0),
     0
   );
-  const drinkCost = isHappyHour ? Number(drink.cost) * DISCOUNT : Number(drink.cost);
+  const sizedBase = sizedDrinkCost(Number(drink.cost), size);
+  const drinkCost = isHappyHour ? sizedBase * DISCOUNT : sizedBase;
   const itemTotal = (drinkCost + toppingCost) * quantity;
   const customizationAnnouncement = buildCustomizationAnnouncement(drink, isHappyHour, selectableToppings);
 
@@ -773,12 +777,12 @@ function CustomizeModal({
               </div>
               {isHappyHour ? (
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm text-gray-400 line-through">${Number(drink.cost).toFixed(2)}</span>
-                  <span className="text-lg font-bold text-amber-700">${(Number(drink.cost) * DISCOUNT).toFixed(2)}</span>
-                  <span className="text-xs text-amber-600">Early Bird Special price</span>
+                  <span className="text-sm text-gray-400 line-through">${sizedBase.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-amber-700">${(sizedBase * DISCOUNT).toFixed(2)}</span>
+                  <span className="text-xs text-amber-600">Early Bird Special price ({size})</span>
                 </div>
               ) : (
-                <p className="text-gray-600 mt-0.5">${Number(drink.cost).toFixed(2)}</p>
+                <p className="text-gray-600 mt-0.5">${sizedBase.toFixed(2)} <span className="text-xs">({size})</span></p>
               )}
             </div>
             {canSpeak && onSpeakDetails && (
@@ -815,6 +819,23 @@ function CustomizeModal({
           </div>
 
           <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Size</label>
+              <div className="customization-slider">
+                {SIZE_OPTIONS.map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSize(option)}
+                    aria-pressed={size === option}
+                    className={`customization-option ${size === option ? 'customization-option-active' : ''}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">Hot Drink?</label>
               <div className="customization-slider">

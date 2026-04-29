@@ -47,11 +47,21 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      return NextResponse.json({
+      const res = NextResponse.json({
         success: true,
         id: employee.employeeid,
-        name: employee.name
+        name: employee.name,
       });
+      if (role === 'manager') {
+        res.cookies.set('manager_auth', 'true', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 60 * 60 * 8,
+        });
+      }
+      return res;
     } finally {
       client.release();
     }

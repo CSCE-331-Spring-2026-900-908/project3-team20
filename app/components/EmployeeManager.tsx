@@ -8,12 +8,14 @@ type EmployeeForm = {
   employeeid: string;
   name: string;
   role: EmployeeRole;
+  email: string;
 };
 
 const EMPTY_FORM: EmployeeForm = {
   employeeid: '',
   name: '',
   role: 'cashier',
+  email: '',
 };
 
 function roleLabel(role: boolean) {
@@ -41,6 +43,12 @@ export default function EmployeeManager() {
   const [form, setForm] = useState<EmployeeForm>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
+  const [employeeName, setEmployeeName] = useState<string>('');
+
+  useEffect(() => {
+    const name = localStorage.getItem('employeeName');
+    if (name) setEmployeeName(name);
+  }, []);
 
   const fetchEmployees = async (showSpinner = true) => {
     if (showSpinner) setLoading(true);
@@ -85,6 +93,7 @@ export default function EmployeeManager() {
       employeeid: String(nextEmployeeId),
       name: '',
       role: 'cashier',
+      email: '',
     });
     setFormError('');
     setFormMode('add');
@@ -96,6 +105,7 @@ export default function EmployeeManager() {
       employeeid: String(employee.employeeid),
       name: employee.name,
       role: roleValue(employee.role),
+      email: employee.email ?? '',
     });
     setFormError('');
     setFormMode('edit');
@@ -133,6 +143,7 @@ export default function EmployeeManager() {
           employeeid: parsedEmployeeId,
           name: trimmedName,
           role: form.role,
+          email: form.email.trim(),
         }),
       });
       const data = await res.json();
@@ -186,7 +197,11 @@ export default function EmployeeManager() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div>
+      <header className="border-b px-6 py-4">
+        <h1 className="text-2xl font-bold">{employeeName || 'Manager'}</h1>
+      </header>
+      <div className="p-6 space-y-6">
       <section className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Employee Management</h2>
@@ -263,6 +278,7 @@ export default function EmployeeManager() {
                   <th className="px-5 py-3 text-left font-medium text-gray-600">ID</th>
                   <th className="px-5 py-3 text-left font-medium text-gray-600">Name</th>
                   <th className="px-5 py-3 text-left font-medium text-gray-600">Role</th>
+                  <th className="px-5 py-3 text-left font-medium text-gray-600">Email</th>
                   <th className="px-5 py-3 text-left font-medium text-gray-600">Cashier PIN</th>
                   <th className="px-5 py-3 text-right font-medium text-gray-600">Actions</th>
                 </tr>
@@ -283,6 +299,7 @@ export default function EmployeeManager() {
                         {roleLabel(employee.role)}
                       </span>
                     </td>
+                    <td className="px-5 py-4 text-gray-500">{employee.email || '—'}</td>
                     <td className="px-5 py-4 text-gray-500">{employee.employeeid}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
@@ -358,6 +375,16 @@ export default function EmployeeManager() {
                   <option value="manager">Manager</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={event => setForm(current => ({ ...current, email: event.target.value }))}
+                  placeholder="employee@example.com"
+                  className="w-full rounded border px-3 py-2 text-sm"
+                />
+              </div>
               {formError && <p className="text-sm text-red-600">{formError}</p>}
             </div>
 
@@ -411,6 +438,7 @@ export default function EmployeeManager() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

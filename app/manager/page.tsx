@@ -278,6 +278,12 @@ export default function ManagerPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [toppings, setToppings] = useState<Topping[]>([]);
   const [miscItems, setMiscItems] = useState<MiscItem[]>([]);
+  const [employeeName, setEmployeeName] = useState<string>('');
+
+  useEffect(() => {
+    const name = localStorage.getItem('employeeName');
+    if (name) setEmployeeName(name);
+  }, []);
   const [view, setView] = useState<ManagerView>('inventory');
   const [showXReport, setShowXReport] = useState(false);
   const [showCustomReport, setShowCustomReport] = useState(false);
@@ -618,7 +624,7 @@ export default function ManagerPage() {
       {/* Header */}
       <header className="border-b bg-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Manager</h1>
+          <h1 className="text-2xl font-bold">{employeeName || 'Manager'}</h1>
           <div className="flex gap-1">
             {(['inventory', 'menu', 'employees', 'reports'] as const).map(v => (
               <button

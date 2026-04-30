@@ -58,6 +58,7 @@ export interface Employee {
   employeeid: number;
   name: string;
   role: boolean;
+  email?: string;
 }
 
 export interface CartItem {

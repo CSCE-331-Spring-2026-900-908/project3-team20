@@ -15,7 +15,7 @@ function parseRole(value: unknown) {
 export async function GET() {
   try {
     const result = await pool.query(
-      'SELECT employeeid, name, role FROM employees ORDER BY employeeid'
+      'SELECT employeeid, name, role, email FROM employees ORDER BY employeeid'
     );
     return NextResponse.json(result.rows);
   } catch (error: unknown) {
@@ -26,18 +26,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { employeeid, name, role } = await request.json();
+    const { employeeid, name, role, email } = await request.json();
     const parsedEmployeeId = parseEmployeeId(employeeid);
     const trimmedName = typeof name === 'string' ? name.trim() : '';
     const parsedRole = parseRole(role);
+    const trimmedEmail = typeof email === 'string' ? email.trim() : '';
 
     if (!parsedEmployeeId || !trimmedName || parsedRole === null) {
       return NextResponse.json({ error: 'Missing or invalid employee fields' }, { status: 400 });
     }
 
     const result = await pool.query(
-      'INSERT INTO employees (employeeid, name, role) VALUES ($1, $2, $3) RETURNING employeeid, name, role',
-      [parsedEmployeeId, trimmedName, parsedRole]
+      'INSERT INTO employees (employeeid, name, role, email) VALUES ($1, $2, $3, $4) RETURNING employeeid, name, role, email',
+      [parsedEmployeeId, trimmedName, parsedRole, trimmedEmail]
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error: unknown) {
@@ -51,18 +52,19 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { employeeid, name, role } = await request.json();
+    const { employeeid, name, role, email } = await request.json();
     const parsedEmployeeId = parseEmployeeId(employeeid);
     const trimmedName = typeof name === 'string' ? name.trim() : '';
     const parsedRole = parseRole(role);
+    const trimmedEmail = typeof email === 'string' ? email.trim() : '';
 
     if (!parsedEmployeeId || !trimmedName || parsedRole === null) {
       return NextResponse.json({ error: 'Missing or invalid employee fields' }, { status: 400 });
     }
 
     const result = await pool.query(
-      'UPDATE employees SET name = $1, role = $2 WHERE employeeid = $3 RETURNING employeeid, name, role',
-      [trimmedName, parsedRole, parsedEmployeeId]
+      'UPDATE employees SET name = $1, role = $2, email = $3 WHERE employeeid = $4 RETURNING employeeid, name, role, email',
+      [trimmedName, parsedRole, trimmedEmail, parsedEmployeeId]
     );
 
     if (result.rows.length === 0) {

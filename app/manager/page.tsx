@@ -130,7 +130,7 @@ function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps)
                   }}
                 />
                 {hoveredIndex === i && (
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
                     {item.value} {valueLabel}
                   </div>
                 )}

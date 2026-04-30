@@ -108,15 +108,15 @@ function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps)
   const maxValue = Math.max(...data.map(d => d.value), 1);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 overflow-hidden">
       <h3 className="text-sm font-medium text-gray-600 mb-4">{title}</h3>
-      <div className="relative flex items-end gap-2 h-40">
+      <div className="relative flex items-end gap-2 h-40 overflow-hidden">
         {data.slice(0, 12).map((item, i) => {
           const height = (item.value / maxValue) * 100;
           return (
             <div
               key={i}
-              className="flex-1 flex flex-col items-center gap-1"
+              className="flex-1 flex flex-col items-center gap-1 min-w-0"
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
@@ -124,7 +124,7 @@ function BarChart({ data, title, valueLabel, color = '#40c4ff' }: BarChartProps)
                 <div
                   className="w-full max-w-8 rounded-t transition-all hover:opacity-80"
                   style={{
-                    height: `${Math.max(height, item.value > 0 ? 2 : 0)}%`,
+                    height: `${Math.min(height, 100)}%`,
                     minHeight: '4px',
                     backgroundColor: color,
                   }}
